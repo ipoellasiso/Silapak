@@ -30,13 +30,13 @@ class LaporanPajakKppController extends Controller
         $userId = Auth::id();
 
         $data = [
-            'title'                     => 'Laporan Pajak KPP',
+            'title'                     => 'Data Pajak GU',
             'active_pengeluaranvertbp'  => 'active',
             'active_subpvertbp'         => '',
             'active_sidevertbp'         => '',
-            'breadcumd'                 => 'PAJAK',
-            'breadcumd1'                => 'Pelaporan',
-            'breadcumd2'                => 'Laporan Pajak KPP',
+            'breadcumd'                 => 'Penatausahaan',
+            'breadcumd1'                => 'Pengelauran',
+            'breadcumd2'                => 'Data Pajak GU',
             'userx' => UserModel::where('id',$userId)
                         ->first(['fullname','role','gambar']),
             'listOpd' => DB::table('opd')

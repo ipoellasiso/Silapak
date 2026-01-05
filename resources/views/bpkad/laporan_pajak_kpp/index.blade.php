@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid">
 
-    <h4>Laporan Pajak KPP</h4>
+    <h4>{{ $title }}</h4>
 
     <br>
     <div class="row mb-3">
@@ -47,7 +47,7 @@
     <br>
     <div class="d-flex gap-2 mb-3">
         <button class="btn btn-success" id="btn-posting">
-            <i class="fas fa-upload"></i> Posting ke KPP
+            <i class="fas fa-upload"></i> Posting Pajak
         </button>
 
         <button class="btn btn-outline-primary" id="btn-export">

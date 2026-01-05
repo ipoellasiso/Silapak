@@ -92,7 +92,7 @@
     // });
 
     //POSTING MASSAL PAJAK KPP
-    $('#btnPosting').click(function () {
+    $('#btn-posting').click(function () {
         Swal.fire({
             title: 'Posting ke KPP?',
             text: 'Data akan dikunci dan tidak bisa diubah',
