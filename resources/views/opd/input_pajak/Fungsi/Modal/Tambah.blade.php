@@ -73,15 +73,21 @@
                             <input type="text" name="ntpn" id="ntpn" class="form-control" required>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label">E-Billing</label>
+                            <input type="text" name="id_billing" id="id_billing" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <label class="form-label">Bukti Setoran</label>
                             <input type="file" name="bukti_setoran" class="form-control"
                                    accept=".pdf,.jpg,.jpeg,.png">
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Bukti Setoran (Lama)</label>
-                        <div id="previewBukti" class="mt-1"></div>
+                        <div class="col-md-6">
+                            <label>Bukti Setoran (Lama)</label>
+                            <div id="previewBukti" class="mt-1"></div>
+                        </div>
                     </div>
 
                 </div>

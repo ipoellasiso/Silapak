@@ -121,15 +121,16 @@ class InputPajakController extends Controller
             ->addColumn('aksi', function($r){
 
                 $edit = '
-                    <button class="btn btn-sm btn-primary btn-input"
-                        data-id="'.$r->id.'" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
+                    
                 ';
 
                 $batal = '';
                 if ($r->status4 !== 'POSTING') {
                     $batal = '
+                        <button class="btn btn-sm btn-primary btn-input"
+                            data-id="'.$r->id.'" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
                         <button class="btn btn-sm btn-warning btn-batal"
                             data-id="'.$r->id.'" title="Batal">
                             <i class="fas fa-undo"></i>
@@ -151,7 +152,7 @@ class InputPajakController extends Controller
 
                 return '
                     <div class="d-flex gap-1 justify-content-center">
-                        '.$edit.$batal.$view.'
+                        '.$batal.$view.'
                     </div>
                 ';
             })
@@ -167,6 +168,30 @@ class InputPajakController extends Controller
      * ===================== */
     public function simpan(Request $request)
     {
+        if ($request->ntpn) {
+            $cekNtpn = TbPotonganGu::where('ntpn', $request->ntpn)
+                ->where('id', '!=', $request->id)
+                ->exists();
+
+            if ($cekNtpn) {
+                return response()->json([
+                    'message' => 'NTPN sudah pernah digunakan!'
+                ], 422);
+            }
+        }
+
+        if ($request->id_billing) {
+            $cekBilling = TbPotonganGu::where('id_billing', $request->id_billing)
+                ->where('id', '!=', $request->id)
+                ->exists();
+
+            if ($cekBilling) {
+                return response()->json([
+                    'message' => '❌ E-Billing sudah pernah digunakan'
+                ], 422);
+            }
+        }
+
         $pajak = TbPotonganGu::findOrFail($request->id);
 
         // 🔑 WAJIB FILE HANYA JIKA INPUT BARU
@@ -248,6 +273,7 @@ class InputPajakController extends Controller
             'nama_npwp'    => $request->nama_npwp,
             'no_npwp'      => $request->no_npwp,
             'ntpn'         => $request->ntpn,
+            'id_billing'   => $request->id_billing, // 🔥 INI
             'bukti_setoran'=> $path,
             'status3'      => 'INPUT'
         ]);
@@ -307,5 +333,34 @@ class InputPajakController extends Controller
         return response()->json(['message'=>'Data pajak dibatalkan']);
     }
     
+    public function cekNtpnEbilling(Request $request)
+    {
+        $request->validate([
+            'ntpn'     => 'nullable',
+            'ebilling' => 'nullable',
+            'id'       => 'nullable'
+        ]);
+
+        $ntpnExists = false;
+        $ebillingExists = false;
+
+        if ($request->ntpn) {
+            $ntpnExists = TbPotonganGu::where('ntpn', $request->ntpn)
+                ->where('id', '!=', $request->id)
+                ->exists();
+        }
+
+        if ($request->ebilling) {
+            $ebillingExists = TbPotonganGu::where('ebilling', $request->ebilling)
+                ->where('id', '!=', $request->id)
+                ->exists();
+        }
+
+        return response()->json([
+            'ntpn_exists'     => $ntpnExists,
+            'ebilling_exists' => $ebillingExists
+        ]);
+    }
+
 }
 

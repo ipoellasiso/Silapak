@@ -16,6 +16,7 @@
     let tableSudah = $('#table-sudah').DataTable({
         processing:true,
         serverSide:true,
+        deferLoading: 0, // ⛔ jangan auto load
         ajax: {
             url: "{{ route('laporan.kpp.sudah') }}",
             data: function (d) {
@@ -31,8 +32,19 @@
             {data:'nomor_sp2d', title:'No SP2D', className:'text-center align-middle'},
             {data:'nilai_sp2d', title:'Nilai SP2D', className:'text-end align-middle'},
             {data:'pajak', title:'Pajak'}, // ✅
-            {data:'nilai_pajak', title:'Nilai Pajak', className:'text-end align-middle'}
+            {data:'nilai_pajak', title:'Nilai Pajak', className:'text-end align-middle'},
+            {data:'aksi', title:'Aksi', orderable:false, searchable:false, className:'text-center'}
         ]
+    });
+
+    let tableBelumLoaded = false;
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        let target = $(e.target).attr('href');
+
+        if (target === '#belum' && !tableBelumLoaded) {
+            tableBelum.ajax.reload();
+            tableBelumLoaded = true;
+        }
     });
 
     let tableBelum = $('#table-belum').DataTable({
@@ -52,38 +64,39 @@
             {data:'tbp', title:'TBP'},
             {data:'jenis_pajak', title:'Jenis Pajak'},
             {data:'nilai_pajak', title:'Nilai Pajak'},
-            {data:'status_sp2d', title:'Status', className:'text-center align-middle'} // ✅
+            {data:'status_sp2d', title:'Status', className:'text-center align-middle'},// ✅
+            {data:'aksi', title:'Aksi', orderable:false, searchable:false, className:'text-center'}
         ]
     });
 
     // TABEL BELUM POSTING
-    let tableBelumPosting;
-    tableBelumPosting = $('#table-belum-posting').DataTable({
-        processing:true,
-        serverSide:true,
-        ajax: {
-            url: "{{ route('laporan.kpp.belumPosting') }}",
-            data: function (d) {
-                d.opd   = $('#filter-opd').val();
-                d.bulan = $('#filter-bulan').val();
-                d.tahun = $('#filter-tahun').val();
-            }
-        },
-        columns:[
-            {data:'DT_RowIndex', title:'No', orderable:false, searchable:false},
-            {data:'no_spm', title:'SPM / TBP'},
-            {data:'jenis_pajak', title:'Jenis Pajak'},
-            {data:'nilai_pajak', title:'Nilai Pajak'},
-            {data:'status', title:'Status', orderable:false, searchable:false}
-        ]
-    });
+    // let tableBelumPosting;
+    // tableBelumPosting = $('#table-belum-posting').DataTable({
+    //     processing:true,
+    //     serverSide:true,
+    //     ajax: {
+    //         url: "{{ route('laporan.kpp.belumPosting') }}",
+    //         data: function (d) {
+    //             d.opd   = $('#filter-opd').val();
+    //             d.bulan = $('#filter-bulan').val();
+    //             d.tahun = $('#filter-tahun').val();
+    //         }
+    //     },
+    //     columns:[
+    //         {data:'DT_RowIndex', title:'No', orderable:false, searchable:false},
+    //         {data:'no_spm', title:'SPM / TBP'},
+    //         {data:'jenis_pajak', title:'Jenis Pajak'},
+    //         {data:'nilai_pajak', title:'Nilai Pajak'},
+    //         {data:'status', title:'Status', orderable:false, searchable:false}
+    //     ]
+    // });
 
     //TOMBOL FILTER
     $('#btn-filter').on('click', function (e) {
         e.preventDefault(); // ⛔ cegah submit / reload halaman
         tableSudah.ajax.reload();
         tableBelum.ajax.reload();
-        tableBelumPosting.ajax.reload(); // 🔥
+        // tableBelumPosting.ajax.reload(); // 🔥
     });
 
     // $('#filter-opd, #filter-bulan, #filter-tahun').change(function () {
@@ -92,48 +105,109 @@
     // });
 
     //POSTING MASSAL PAJAK KPP
-    $('#btn-posting').click(function () {
-        Swal.fire({
-            title: 'Posting ke KPP?',
-            text: 'Data akan dikunci dan tidak bisa diubah',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Posting'
-        }).then((res) => {
+    // $('#btn-posting').click(function () {
+    //     Swal.fire({
+    //         title: 'Posting ke KPP?',
+    //         text: 'Data akan dikunci dan tidak bisa diubah',
+    //         icon: 'warning',
+    //         showCancelButton: true,
+    //         confirmButtonText: 'Ya, Posting'
+    //     }).then((res) => {
 
-            if(res.isConfirmed){
-                $.post("{{ route('kpp.posting.massal') }}",{
-                    tahun: $('#filter-tahun').val(),
-                    bulan: $('#filter-bulan').val(),
-                    opd: $('#filter-opd').val()
-                },function(r){
-                    Swal.fire('Berhasil', r.message, 'success');
-                    tableSudah.ajax.reload();
-                    tableBelum.ajax.reload();
-                    tableBelumPosting.ajax.reload(); // 🔥
-                }).fail(function(e){
-                    Swal.fire('Gagal', e.responseJSON.message, 'error');
-                });
+    //         if(res.isConfirmed){
+    //             $.post("{{ route('kpp.posting.massal') }}",{
+    //                 tahun: $('#filter-tahun').val(),
+    //                 bulan: $('#filter-bulan').val(),
+    //                 opd: $('#filter-opd').val()
+    //             },function(r){
+    //                 Swal.fire('Berhasil', r.message, 'success');
+    //                 tableSudah.ajax.reload();
+    //                 tableBelum.ajax.reload();
+    //                 tableBelumPosting.ajax.reload(); // 🔥
+    //             }).fail(function(e){
+    //                 Swal.fire('Gagal', e.responseJSON.message, 'error');
+    //             });
+    //         }
+    //     });
+    // });
+
+    // $('#btn-export').click(function () {
+    //     let tahun = $('#filter-tahun').val();
+    //     let bulan = $('#filter-bulan').val();
+    //     let opd   = $('#filter-opd').val();
+
+    //     if (!tahun) {
+    //         Swal.fire('Gagal','Tahun wajib dipilih','warning');
+    //         return;
+    //     }
+
+    //     let url = "{{ route('laporan.kpp.export') }}"
+    //         + "?tahun=" + tahun
+    //         + "&bulan=" + bulan
+    //         + "&opd=" + opd;
+
+    //     window.location.href = url;
+    // });
+
+    $(document).on('click','.btn-edit', function () {
+        let id = $(this).data('id');
+
+        $.get("{{ url('/bpkad/pajak/detail') }}/" + id, function (res) {
+            $('#id_pajak').val(res.id);
+            $('#nomor_tbp').val(res.nomor_tbp);
+            $('#no_spm').val(res.no_spm);
+            $('#jenis_pajak').val(res.nama_pajak_potongan);
+            $('#nilai_pajak').val(
+                new Intl.NumberFormat('id-ID').format(res.nilai_tbp_pajak_potongan)
+            );
+
+            $('#akun_pajak').val(res.akun_pajak).trigger('change');
+            $('#rek_belanja').val(res.rek_belanja);
+            $('#nama_npwp').val(res.nama_npwp);
+            $('#no_npwp').val(res.no_npwp);
+            $('#ntpn').val(res.ntpn);
+
+            if(res.bukti_setoran){
+                $('#previewBukti').html(`
+                    <a href="/storage/${res.bukti_setoran}"
+                    target="_blank"
+                    class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-eye"></i> Lihat Bukti
+                    </a>
+                `);
             }
+
+            $('#modalInput').modal('show');
         });
     });
 
-    $('#btn-export').click(function () {
-        let tahun = $('#filter-tahun').val();
-        let bulan = $('#filter-bulan').val();
-        let opd   = $('#filter-opd').val();
+    $('#formInput').submit(function(e){
+        e.preventDefault();
 
-        if (!tahun) {
-            Swal.fire('Gagal','Tahun wajib dipilih','warning');
-            return;
-        }
+        let form = new FormData(this);
 
-        let url = "{{ route('laporan.kpp.export') }}"
-            + "?tahun=" + tahun
-            + "&bulan=" + bulan
-            + "&opd=" + opd;
+        $.ajax({
+            url: "{{ route('bpkad.pajak.simpan') }}",
+            type: "POST",
+            data: form,
+            processData: false,
+            contentType: false,
 
-        window.location.href = url;
+            success: function(res){
+                Swal.fire('Berhasil', res.message, 'success');
+                $('#modalInput').modal('hide');
+                tableSudah.ajax.reload();
+                tableBelum.ajax.reload();
+            },
+
+            error: function(xhr){
+                Swal.fire(
+                    'Gagal',
+                    xhr.responseJSON?.message || 'Terjadi kesalahan',
+                    'error'
+                );
+            }
+        });
     });
 
 });

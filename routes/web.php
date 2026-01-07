@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\BkuController;
 use App\Http\Controllers\Bpkad\LaporanPajakKppController;
+use App\Http\Controllers\Bpkad\RekonPajakKppController;
 use App\Http\Controllers\Bpkad\VerifikasiTbpController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\KamarController;
@@ -139,6 +140,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/opd/input-pajak/simpan', 
         [InputPajakController::class, 'simpan']);
+    
+    Route::post('/cek-ntpn-ebilling', [InputPajakController::class, 'cekNtpnEbilling']);
 
     Route::get('/opd/input-pajak/detail/{id}', 
     [InputPajakController::class, 'detail']);
@@ -188,3 +191,27 @@ Route::get(
     [LaporanPajakKppController::class, 'export']
 )->name('laporan.kpp.export');
 
+Route::prefix('bpkad')->middleware(['auth'])->group(function () {
+
+    Route::get(
+        '/pajak/detail/{id}',
+        [LaporanPajakKppController::class, 'detail']
+    )->name('bpkad.pajak.detail');
+
+    Route::post(
+        '/pajak/simpan',
+        [LaporanPajakKppController::class, 'simpan']
+    )->name('bpkad.pajak.simpan');
+
+});
+
+// REKON KE KPP
+Route::prefix('bpkad/kpp')->middleware('auth')->group(function () {
+    Route::get('/rekon', [RekonPajakKppController::class,'index'])->name('kpp.rekon');
+    Route::get('/rekon/data', [RekonPajakKppController::class,'data'])->name('kpp.rekon.data');
+    Route::post('/rekon/posting', [RekonPajakKppController::class,'posting'])->name('kpp.rekon.posting');
+    // Route::get('/rekon/export', [RekonPajakKppController::class,'export'])->name('kpp.rekon.export');
+    Route::post('/rekon-pajak-kpp/unposting', [RekonPajakKppController::class, 'unPosting'])->name('kpp.rekon.unposting');
+    Route::post('/rekon-pajak-kpp/unposting-massal', [RekonPajakKppController::class, 'unPostingMassal'])->name('kpp.rekon.unposting.massal');
+    Route::get('/rekon-pajak-kpp/export',[RekonPajakKppController::class, 'export'])->name('kpp.rekon.export');
+});

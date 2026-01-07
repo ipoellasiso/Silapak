@@ -45,7 +45,7 @@
     </div>
 
     <br>
-    <div class="d-flex gap-2 mb-3">
+    {{-- <div class="d-flex gap-2 mb-3">
         <button class="btn btn-success" id="btn-posting">
             <i class="fas fa-upload"></i> Posting Pajak
         </button>
@@ -53,9 +53,8 @@
         <button class="btn btn-outline-primary" id="btn-export">
             <i class="fas fa-file-excel"></i> Export Excel KPP
         </button>
-    </div>
+    </div> --}}
 
-    <br><br>
     <ul class="nav nav-tabs mb-3">
         <li class="nav-item">
             <a class="nav-link active" data-bs-toggle="tab" href="#sudah">
@@ -67,11 +66,11 @@
                 ❌ Belum SP2D
             </a>
         </li>
-        <li class="nav-item">
+        {{-- <li class="nav-item">
             <a class="nav-link" data-bs-toggle="tab" href="#belumPosting">
                 ⏳ Pajak Belum Diposting
             </a>
-        </li>
+        </li> --}}
     </ul>
 
     <br>
@@ -85,14 +84,15 @@
         </div>
 
         <!-- 🔥 TAB BARU -->
-        <div class="tab-pane fade" id="belumPosting">
+        {{-- <div class="tab-pane fade" id="belumPosting">
             <table class="table" id="table-belum-posting" style="width: 100%"></table>
-        </div>
+        </div> --}}
 
     </div>
 
 </div>
 
+@include('bpkad.laporan_pajak_kpp.Modal.Edit')
 @include('bpkad.laporan_pajak_kpp.Fungsi.Fungsi')
 
 @endsection

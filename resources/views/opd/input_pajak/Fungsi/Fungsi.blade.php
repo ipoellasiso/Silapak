@@ -49,6 +49,7 @@
         $('#modalInput').modal('show');
     });
 
+    //Form input
     $('#formInput').submit(function(e){
         e.preventDefault();
 
@@ -79,12 +80,23 @@
                 $('#modalInput').modal('hide');
             },
 
+            // 🔥🔥🔥 DI SINI LETAKNYA 🔥🔥🔥
             error: function(xhr){
-                Swal.fire(
-                    'Gagal',
-                    xhr.responseJSON?.message || 'Terjadi kesalahan',
-                    'error'
-                );
+                let msg = 'Terjadi kesalahan';
+
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.message) {
+                        msg = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON.errors) {
+                        msg = Object.values(xhr.responseJSON.errors)[0][0];
+                    }
+                }
+
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Validasi Gagal',
+                    text: msg
+                });
             },
 
             complete: function(){
@@ -155,6 +167,56 @@
                     tbSudah.ajax.reload();
                 });
             }
+        });
+    });
+
+    //VALIDASI REALTIME (ON BLUR)
+    $('#ntpn, #ebilling').on('blur', function(){
+        let ntpn     = $('#ntpn').val();
+        let ebilling = $('#ebilling').val();
+        let id       = $('#id_pajak').val();
+
+        if(ntpn === '' && ebilling === '') return;
+
+        $.post("{{ url('/opd/input-pajak/cek-ntpn-ebilling') }}", {
+            ntpn: ntpn,
+            ebilling: ebilling,
+            id: id,
+            _token: $('meta[name="csrf-token"]').attr('content')
+        }, function(res){
+
+            if(res.ntpn_exists){
+                Swal.fire('Duplikat!', 'NTPN sudah pernah digunakan', 'warning');
+                $('#ntpn').val('').focus();
+                return;
+            }
+
+            if(res.ebilling_exists){
+                Swal.fire('Duplikat!', 'E-Billing sudah pernah digunakan', 'warning');
+                $('#ebilling').val('').focus();
+                return;
+            }
+
+        });
+    });
+
+    $('#id_billing').on('blur', function () {
+        let id_billing = $(this).val();
+        let id = $('#id_pajak').val();
+
+        if (id_billing === '') return;
+
+        $.post("{{ url('/opd/input-pajak/cek-billing') }}", {
+            id_billing: id_billing,
+            id: id,
+            _token: $('meta[name="csrf-token"]').attr('content')
+        }, function (res) {
+
+            if (res.exists) {
+                Swal.fire('Duplikat!', 'E-Billing sudah pernah digunakan', 'warning');
+                $('#id_billing').val('').focus();
+            }
+
         });
     });
 

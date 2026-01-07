@@ -106,6 +106,17 @@
                                     </li>
                                 </ul>
                         </li>
+                        <li class="submenu-item has-sub @if(isset($active_siderekonpajak)){{ $active_siderekonpajak }} @endif">
+                            <a href="#" class="submenu-link">Rekonsiliasi Pajak</a>
+                                <ul class="submenu submenu-level-2 ">
+                                    <li class="submenu-item @if(isset($active_siderekonpajakls)){{ $active_siderekonpajakls }} @endif">
+                                        <a href="#" class="submenu-link">LS</a>
+                                    </li>
+                                    <li class="submenu-item @if(isset($active_siderekonpajakgu)){{ $active_siderekonpajakgu }} @endif">
+                                        <a href="/bpkad/kpp/rekon" class="submenu-link">GU</a>
+                                    </li>
+                                </ul>
+                        </li>
                     </ul>
                 </li>
                 @endif
@@ -119,7 +130,7 @@
                         </a>
                         <ul class="submenu @if(isset($active_subopd)){{ $active_subopd }} @endif">
                             <li class="submenu-item @if(isset($active_sidepengajuantbp)){{ $active_sidepengajuantbp }} @endif">
-                                <a href="/pengajuan-tbp">Tarik data TBP</a>
+                                <a href="/pengajuan-tbp">Pengajuan TBP</a>
                             </li>
                             <li class="submenu-item @if(isset($active_sideinputtbp)){{ $active_sideinputtbp }} @endif">
                                 <a href="/opd/input-pajak">Input Data Pajak</a>

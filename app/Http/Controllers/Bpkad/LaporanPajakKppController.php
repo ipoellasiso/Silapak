@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Http;
 use App\Exports\LaporanPajakKppExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 
 class LaporanPajakKppController extends Controller
 {
@@ -40,8 +42,12 @@ class LaporanPajakKppController extends Controller
             'userx' => UserModel::where('id',$userId)
                         ->first(['fullname','role','gambar']),
             'listOpd' => DB::table('opd')
-                    ->orderBy('nama_opd')
-                    ->get(),
+                        ->orderBy('nama_opd')
+                        ->get(),
+            'akun_pajak' => DB::table('tb_akun_pajak')
+                            ->where('status', 'AKTIF')
+                            ->orderBy('kode_akun')
+                            ->get(),
         ];
 
         return view('bpkad.laporan_pajak_kpp.index', $data);
@@ -50,11 +56,8 @@ class LaporanPajakKppController extends Controller
     public function data(Request $request)
     {
         // 🔹 Ambil SP2D
-        $sp2d = Http::get('http://127.0.0.1:8001/api/sp2d')->json();
-
-        $sp2dBySpm = collect($sp2d)->mapWithKeys(function ($item) {
-            return [ trim($item['nomor_spm']) => $item ];
-        });
+        $sp2d = $this->getSp2dCache();
+        $sp2dBySpm = $sp2d->keyBy(fn($i)=>trim($i['nomor_spm']));
 
         // 🔹 QUERY UTAMA (JOIN SESUAI RELASI DB)
         $query = DB::table('tb_tbp as tbp')
@@ -106,7 +109,7 @@ class LaporanPajakKppController extends Controller
         $query = DB::table('tb_tbp as tbp')
         ->join('tb_potongangu as pot','tbp.id_tbp','=','pot.id_tbp')
         ->whereYear('tbp.tanggal_tbp', $this->tahunAktif) // ✅ FIX
-        ->where('pot.status4','POSTING');
+        ->where('pot.status3','INPUT');
 
         // 🔹 FILTER OPD
         if ($request->opd) {
@@ -124,6 +127,9 @@ class LaporanPajakKppController extends Controller
         }
 
         return $query->select(
+            'pot.id', // 🔥 TAMBAHKAN
+            'pot.bukti_setoran',
+            'pot.status4',
             'tbp.no_spm',
             'tbp.nama_skpd',
             'tbp.nomor_tbp',
@@ -141,8 +147,8 @@ class LaporanPajakKppController extends Controller
 
     public function dataSudahSp2d(Request $request)
     {
-        $sp2d = Http::get('http://127.0.0.1:8001/api/sp2d')->json();
-        $sp2dBySpm = collect($sp2d)->keyBy(fn($i)=>trim($i['nomor_spm']));
+        $sp2d = $this->getSp2dCache();
+        $sp2dBySpm = $sp2d->keyBy(fn($i)=>trim($i['nomor_spm']));
 
         $query = $this->baseQuery($request)
             ->whereIn('tbp.no_spm', $sp2dBySpm->keys());
@@ -180,7 +186,38 @@ class LaporanPajakKppController extends Controller
                     </div>
                 ';
             })
-            ->rawColumns(['no_spm', 'pajak'])
+            ->addColumn('aksi', function ($r) {
+
+                $btnEdit = '';
+                if ($r->status4 !== 'POSTING') {
+                    $btnEdit = '
+                        <button class="btn btn-sm btn-primary btn-edit"
+                            data-id="'.$r->id.'" title="Edit Pajak">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    ';
+                }
+
+                $btnView = '';
+                if ($r->bukti_setoran) {
+                    $btnView = '
+                        <a href="'.asset('storage/'.$r->bukti_setoran).'"
+                        target="_blank"
+                        class="btn btn-sm btn-info"
+                        title="Lihat Bukti Setoran">
+                        <i class="fas fa-eye"></i>
+                        </a>
+                    ';
+                }
+
+                return '
+                    <div class="d-flex justify-content-center gap-1">
+                        '.$btnEdit.'
+                        '.$btnView.'
+                    </div>
+                ';
+            })
+            ->rawColumns(['no_spm', 'pajak', 'aksi'])
             ->make(true);
     }
 
@@ -218,7 +255,38 @@ class LaporanPajakKppController extends Controller
                     </div>
                 ';
             })
-            ->rawColumns(['status_sp2d','tbp'])
+            ->addColumn('aksi', function ($r) {
+
+                $btnEdit = '';
+                if ($r->status4 !== 'POSTING') {
+                    $btnEdit = '
+                        <button class="btn btn-sm btn-primary btn-edit"
+                            data-id="'.$r->id.'" title="Edit Pajak">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    ';
+                }
+
+                $btnView = '';
+                if ($r->bukti_setoran) {
+                    $btnView = '
+                        <a href="'.asset('storage/'.$r->bukti_setoran).'"
+                        target="_blank"
+                        class="btn btn-sm btn-info"
+                        title="Lihat Bukti Setoran">
+                        <i class="fas fa-eye"></i>
+                        </a>
+                    ';
+                }
+
+                return '
+                    <div class="d-flex justify-content-center gap-1">
+                        '.$btnEdit.'
+                        '.$btnView.'
+                    </div>
+                ';
+            })
+            ->rawColumns(['status_sp2d','tbp', 'aksi'])
             ->make(true);
     }
 
@@ -261,74 +329,207 @@ class LaporanPajakKppController extends Controller
         ]);
     }
 
-    public function dataBelumPosting(Request $request)
+    // public function dataBelumPosting(Request $request)
+    // {
+    //     $sp2d = Http::get('http://127.0.0.1:8001/api/sp2d')->json();
+    //     $sp2dBySpm = collect($sp2d)->keyBy(fn($i)=>trim($i['nomor_spm']));
+
+    //     $query = DB::table('tb_tbp as tbp')
+    //         ->join('tb_potongangu as pot','tbp.id_tbp','=','pot.id_tbp')
+    //         ->where('pot.status3','INPUT')        // sudah input
+    //         ->whereNull('pot.status4')             // 🔥 BELUM POSTING
+    //         ->whereYear('tbp.tanggal_tbp', $request->tahun);
+
+    //     if ($request->bulan) {
+    //         $query->whereMonth('tbp.tanggal_tbp', $request->bulan);
+    //     }
+
+    //     if ($request->opd) {
+    //         $query->where('tbp.nama_skpd', $request->opd);
+    //     }
+
+    //     $query->select(
+    //         'tbp.no_spm',
+    //         'tbp.nomor_tbp',
+    //         'tbp.nama_skpd',
+    //         'pot.nama_pajak_potongan as jenis_pajak',
+    //         'pot.nilai_tbp_pajak_potongan as nilai_pajak'
+    //     );
+
+    //     return DataTables::of($query)
+    //         ->addIndexColumn()
+
+    //         ->editColumn('no_spm', function ($r) {
+    //             return '
+    //                 <div>
+    //                     <strong>SKPD:</strong> '.$r->nama_skpd.'<br>
+    //                     <strong>SPM:</strong> '.$r->no_spm.'<br>
+    //                     <strong>TBP:</strong> '.$r->nomor_tbp.'
+    //                 </div>
+    //             ';
+    //         })
+
+    //         ->editColumn('nilai_pajak', fn($r)=>number_format($r->nilai_pajak))
+
+    //         ->addColumn('status', function () {
+    //             return '
+    //                 <span class="badge bg-warning text-dark">
+    //                     ⏳ Belum Posting
+    //                 </span>
+    //             ';
+    //         })
+
+    //         ->rawColumns(['no_spm','status'])
+    //         ->make(true);
+    // }
+
+    // public function export(Request $request)
+    // {
+    //     $request->validate([
+    //         'tahun' => 'required'
+    //     ]);
+
+    //     return Excel::download(
+    //         new LaporanPajakKppExport(
+    //             $request->tahun,
+    //             $request->bulan,
+    //             $request->opd
+    //         ),
+    //         'Laporan_Pajak_KPP_'.$request->tahun.'.xlsx'
+    //     );
+    // }
+
+    public function detail($id)
     {
-        $sp2d = Http::get('http://127.0.0.1:8001/api/sp2d')->json();
-        $sp2dBySpm = collect($sp2d)->keyBy(fn($i)=>trim($i['nomor_spm']));
-
-        $query = DB::table('tb_tbp as tbp')
-            ->join('tb_potongangu as pot','tbp.id_tbp','=','pot.id_tbp')
-            ->where('pot.status3','INPUT')        // sudah input
-            ->whereNull('pot.status4')             // 🔥 BELUM POSTING
-            ->whereYear('tbp.tanggal_tbp', $request->tahun);
-
-        if ($request->bulan) {
-            $query->whereMonth('tbp.tanggal_tbp', $request->bulan);
-        }
-
-        if ($request->opd) {
-            $query->where('tbp.nama_skpd', $request->opd);
-        }
-
-        $query->select(
-            'tbp.no_spm',
-            'tbp.nomor_tbp',
-            'tbp.nama_skpd',
-            'pot.nama_pajak_potongan as jenis_pajak',
-            'pot.nilai_tbp_pajak_potongan as nilai_pajak'
-        );
-
-        return DataTables::of($query)
-            ->addIndexColumn()
-
-            ->editColumn('no_spm', function ($r) {
-                return '
-                    <div>
-                        <strong>SKPD:</strong> '.$r->nama_skpd.'<br>
-                        <strong>SPM:</strong> '.$r->no_spm.'<br>
-                        <strong>TBP:</strong> '.$r->nomor_tbp.'
-                    </div>
-                ';
-            })
-
-            ->editColumn('nilai_pajak', fn($r)=>number_format($r->nilai_pajak))
-
-            ->addColumn('status', function () {
-                return '
-                    <span class="badge bg-warning text-dark">
-                        ⏳ Belum Posting
-                    </span>
-                ';
-            })
-
-            ->rawColumns(['no_spm','status'])
-            ->make(true);
+        return DB::table('tb_potongangu')
+            ->join('tb_tbp','tb_tbp.id_tbp','=','tb_potongangu.id_tbp')
+            ->where('tb_potongangu.id',$id)
+            ->select(
+                'tb_potongangu.*',
+                'tb_tbp.nomor_tbp',
+                'tb_tbp.no_spm'
+            )
+            ->first();
     }
 
-    public function export(Request $request)
+    public function simpan(Request $request)
     {
-        $request->validate([
-            'tahun' => 'required'
+        $pajak = TbPotonganGu::findOrFail($request->id);
+
+        /* =====================
+        * 🔒 VALIDASI AKSES
+        * ===================== */
+
+        if ($pajak->status3 !== 'INPUT') {
+            return response()->json([
+                'message' => 'Data belum INPUT, tidak bisa diedit BPKAD'
+            ], 403);
+        }
+
+        if ($pajak->status4 === 'POSTING') {
+            return response()->json([
+                'message' => 'Data sudah POSTING dan bersifat final'
+            ], 403);
+        }
+
+        /* =====================
+        * VALIDASI FORM
+        * ===================== */
+        $rules = [
+            'id'          => 'required',
+            'akun_pajak'  => 'required',
+            'rek_belanja' => 'required',
+            'nama_npwp'   => 'required',
+            'no_npwp'     => 'required',
+            'ntpn'        => 'required',
+            'bukti_setoran' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5048'
+        ];
+
+        $request->validate($rules);
+
+        /* =====================
+        * DATA LAMA
+        * ===================== */
+        $ntpnLama = $pajak->ntpn;
+        $pathLama = $pajak->bukti_setoran;
+        $path     = $pathLama;
+
+        /* =====================
+        * NAMA OPD (SAMA PERSIS OPD)
+        * ===================== */
+        $namaOpd = str_replace(
+            ' ',
+            '_',
+            strtoupper(
+                DB::table('tb_tbp')
+                    ->where('id_tbp', $pajak->id_tbp)
+                    ->value('nama_skpd')
+            )
+        );
+
+        /* =====================
+        * JIKA UPLOAD FILE BARU
+        * ===================== */
+        if ($request->hasFile('bukti_setoran')) {
+
+            if ($pathLama) {
+                Storage::disk('public')->delete($pathLama);
+            }
+
+            $file = $request->file('bukti_setoran');
+            $ext  = $file->getClientOriginalExtension();
+
+            $filename = $request->ntpn . '-' . $namaOpd . '.' . $ext;
+
+            $path = $file->storeAs(
+                'bukti_setoran_pajak',
+                $filename,
+                'public'
+            );
+        }
+
+        /* =====================
+        * 🔁 RENAME FILE JIKA NTPN BERUBAH
+        * ===================== */
+        elseif ($ntpnLama && $ntpnLama !== $request->ntpn && $pathLama) {
+
+            $ext = pathinfo($pathLama, PATHINFO_EXTENSION);
+
+            $newFilename = $request->ntpn . '-' . $namaOpd . '.' . $ext;
+            $newPath = 'bukti_setoran_pajak/' . $newFilename;
+
+            if (Storage::disk('public')->exists($pathLama)) {
+                Storage::disk('public')->move($pathLama, $newPath);
+                $path = $newPath;
+            }
+        }
+
+        /* =====================
+        * UPDATE DATA
+        * ===================== */
+        $pajak->update([
+            'akun_pajak'    => $request->akun_pajak,
+            'rek_belanja'   => $request->rek_belanja,
+            'nama_npwp'     => $request->nama_npwp,
+            'no_npwp'       => $request->no_npwp,
+            'ntpn'          => $request->ntpn,
+            'bukti_setoran' => $path,
+            'updated_by'    => auth()->id(),
+            'updated_at'    => now(),
         ]);
 
-        return Excel::download(
-            new LaporanPajakKppExport(
-                $request->tahun,
-                $request->bulan,
-                $request->opd
-            ),
-            'Laporan_Pajak_KPP_'.$request->tahun.'.xlsx'
-        );
+        return response()->json([
+            'message' => 'Data pajak berhasil diperbarui oleh BPKAD'
+        ]);
+    }
+
+    private function getSp2dCache()
+    {
+        return Cache::remember('sp2d_api_cache', 300, function () {
+            return collect(
+                Http::get('http://127.0.0.1:8001/api/sp2d')->json()
+            );
+        });
     }
 
 }
