@@ -82,6 +82,18 @@
                             </li>
                         </ul>
                     </li>
+
+                    <li class="sidebar-item  has-sub @if(isset($active_pengeluaran)){{ $active_pengeluaran }} @endif">
+                        <a href="#" class='sidebar-link'>
+                            <i class="bi bi-person-circle"></i>
+                            <span>Data Ingestion</span>
+                        </a>
+                        <ul class="submenu @if(isset($active_subopd)){{ $active_subopd }} @endif">
+                            <li class="submenu-item @if(isset($active_sp2d)){{ $active_sp2d }} @endif">
+                                <a href="/sp2d/index">SP2D</a>
+                            </li>
+                        </ul>
+                    </li>
                 @endif
 
                 @if(Auth::user()->role == 'Admin' || Auth::user()->role == 'Verifikasi')

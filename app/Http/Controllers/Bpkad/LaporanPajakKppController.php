@@ -200,13 +200,18 @@ class LaporanPajakKppController extends Controller
             })
 
             ->addColumn('aksi', function ($r) {
+                // JIKA STATUS4 = POSTING -> TIDAK ADA EDIT
+                if ($r->status4 === 'POSTING') {
+                    return '<span class="badge bg-success">POSTING</span>';
+                }
+
+                // SELAIN ITU -> BISA EDIT
                 return '
-                    <div class="d-flex justify-content-center gap-1">
-                        <button class="btn btn-sm btn-primary btn-edit"
-                            data-id="'.$r->id.'">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    </div>
+                    <button class="btn btn-sm btn-primary btn-edit"
+                        data-id="'.$r->id.'"
+                        title="Edit Pajak">
+                        <i class="fas fa-edit"></i>
+                    </button>
                 ';
             })
 

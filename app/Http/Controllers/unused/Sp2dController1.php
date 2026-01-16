@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\BelanjalsguModel;
 use App\Models\PotonganModel;
 use App\Models\Sp2dModel;
+use App\Models\TbBelanjaLs;
+use App\Models\TbPajakPotonganLs;
+use App\Models\TbSp2d;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
-class Sp2dController extends Controller
+class Sp2dController1 extends Controller
 {
     public function __construct()
     {
@@ -40,7 +43,7 @@ class Sp2dController extends Controller
     public function getData(Request $request)
     {
         if ($request->ajax()) {
-            $data = Sp2dModel::select(['idhalaman', 'nomor_spm', 'tanggal_sp2d', 'nomor_sp2d', 'nama_skpd', 'nama_pihak_ketiga', 'keterangan_sp2d', 'jenis', 'nilai_sp2d']);
+            $data = TbSp2d::select(['idhalaman', 'nomor_spm', 'tanggal_sp2d', 'nomor_sp2d', 'nama_skpd', 'nama_pihak_ketiga', 'keterangan_sp2d', 'jenis', 'nilai_sp2d']);
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('action', function($row){
@@ -60,7 +63,7 @@ class Sp2dController extends Controller
 
     public function show($id)
     {
-        $sp2d = Sp2dModel::with(['belanja', 'potongan'])
+        $sp2d = TbSp2d::with(['belanja', 'potongan'])
             ->where('idhalaman', $id)
             ->first();
 
@@ -82,14 +85,14 @@ class Sp2dController extends Controller
 
     public function destroy($id)
     {
-        $sp2d = Sp2dModel::where('idhalaman', $id)->first();
+        $sp2d = TbSp2d::where('idhalaman', $id)->first();
         if (!$sp2d) {
             return response()->json(['message' => 'Data tidak ditemukan'], 404);
         }
 
         // Hapus relasi
-        BelanjalsguModel::where('id_sp2d', $id)->delete();
-        PotonganModel::where('id_potongan', $id)->delete();
+        TbBelanjaLs::where('id_sp2d', $id)->delete();
+        TbPajakPotonganLs::where('id_potongan', $id)->delete();
         $sp2d->delete();
 
         return response()->json(['message' => 'Data SP2D berhasil dihapus']);
@@ -103,7 +106,7 @@ class Sp2dController extends Controller
         ]);
 
         // Ambil data dari model BelanjalsguModel (tabel rekening belanja)
-        $data = BelanjalsguModel::find($request->id);
+        $data = TbBelanjaLs::find($request->id);
         if (!$data) {
             return response()->json(['success' => false, 'message' => 'Data tidak ditemukan']);
         }

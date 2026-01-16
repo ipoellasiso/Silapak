@@ -1,81 +1,201 @@
 @extends('Template.Layout')
 @section('content')
 
-<section class="row">
-    <div class="col-12 col-lg-12">
-        <div class="row">
-            <div class="col-6 col-lg-3 col-md-6">
-                <div class="card">
-                    <div class="card-body px-3 py-4-5">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="stats-icon purple">
-                                    <i class="iconly-boldDocument"></i>
-                                    {{-- <i class="bi bi-coin"></i> --}}
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <h6 class="text-muted font-semibold">TOTAL SP2D LS</h6>
-                                {{-- <h6 class="font-extrabold mb-0">{{ number_format($total_ls) }}</h6> --}}
-                            </div>
-                        </div>
-                    </div>
+<style>
+    .stat-card {
+        display:flex;align-items:center;gap:12px;
+        background:#fff;padding:14px 18px;border-radius:12px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.05);
+    }
+    .stat-icon {
+        width:45px;height:45px;border-radius:10px;display:flex;
+        justify-content:center;align-items:center;color:white;font-size:22px;
+    }
+    .chart-card {
+        background:#fff;padding:18px;border-radius:12px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.05);
+        min-height:380px;
+    }
+    #chartPajak {
+    width: 100% !important;
+    height: 360px !important; /* bebas 300–450px */
+}
+
+.chart-card {
+    background:#fff;
+    border-radius:14px;
+    padding:18px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.05);
+    height: 420px;
+    display:flex;
+    flex-direction:column;
+}
+#profileChart, #statusChart {
+    flex:1;
+}
+</style>
+
+<div class="container-fluid py-4">
+
+    {{-- <h2 class="fw-bold mb-4">Dashboard Pajak</h2> --}}
+
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#7367F0;">
+                    <i class="bi bi-building"></i>
                 </div>
-            </div>
-            <div class="col-6 col-lg-3 col-md-6">
-                <div class="card">
-                    <div class="card-body px-3 py-4-5">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="stats-icon blue">
-                                    <i class="iconly-boldDocument"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <h6 class="text-muted font-semibold">TOTAL SP2D GU</h6>
-                                {{-- <h6 class="font-extrabold mb-0">{{ number_format($total_gu) }}</h6> --}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-lg-3 col-md-6">
-                <div class="card">
-                    <div class="card-body px-3 py-4-5">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="stats-icon green">
-                                    <i class="iconly-boldDocument"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <h6 class="text-muted font-semibold">TOTAL SP2D KESELURUHAN</h6>
-                                {{-- <h6 class="font-extrabold mb-0">{{ number_format($total_all) }}</h6> --}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-6 col-lg-3 col-md-6">
-                <div class="card">
-                    <div class="card-body px-3 py-4-5">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="stats-icon red">
-                                    <i class="iconly-boldDiscovery"></i>
-                                </div>
-                            </div>
-                            <div class="col-md-8">
-                                <h6 class="text-muted font-semibold">Jumlah SP2D</h6>
-                                {{-- <h6 class="font-extrabold mb-0">{{$total_all1}}</h6> --}}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div><small class="text-muted">Total OPD</small><div class="fw-bold fs-4">{{ $totalOpd }}</div></div>
             </div>
         </div>
-        <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#39C0ED;">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div><small class="text-muted">Total User</small><div class="fw-bold fs-4">{{ $totalUser }}</div></div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#FFBB33;">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div><small class="text-muted">Belum Verifikasi</small><div class="fw-bold fs-4">{{ $totalBelum }}</div></div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#00C851;">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <div><small class="text-muted">Pajak Diterima</small><div class="fw-bold fs-4">{{ $totalTerima }}</div></div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:#ff4444;">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div><small class="text-muted">Pajak Ditolak</small><div class="fw-bold fs-4">{{ $totalTolak }}</div></div>
+            </div>
+        </div>
     </div>
-</section>
 
+    {{-- <form method="GET" class="mb-3">
+        <div style="width:200px;">
+            <select name="tahun" class="form-select" onchange="this.form.submit()">
+                @foreach($listTahun as $th)
+                    <option value="{{ $th }}" {{ $tahun == $th ? 'selected' : '' }}>Tahun {{ $th }}</option>
+                @endforeach
+            </select>
+        </div>
+    </form> --}}
+
+    <br><br>
+    <div class="row g-3">
+        <div class="col-xl-12 col-lg-12">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Grafik PerBulan</h5>
+                <div id="profileChart"></div>
+            </div>
+        </div>
+        {{-- <div class="col-xl-4 col-lg-12">
+            <div class="chart-card">
+                <h6 class="fw-bold mb-3">Status Pajak</h6>
+                <canvas id="chartStatus"></canvas>
+            </div>
+        </div> --}}
+    </div>
+
+</div>
 @endsection
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+    // ============= LINE CHART =============
+    const dataChart = @json($chartBulan);
+
+    var options = {
+        chart: {
+            type: 'bar',
+            height: 350,
+            background: '#ffffff',
+            toolbar: { show: true }
+        },
+        plotOptions: {
+            bar: {
+                borderRadius: 6,
+                columnWidth: '45%',
+            }
+        },
+        dataLabels: { enabled: false },
+        stroke: {
+            show: true,
+            width: 2,
+            colors: ['#435ebe']
+        },
+        series: [{
+            name: "Jumlah Pajak (Rp)",
+            data: dataChart
+        }],
+        xaxis: {
+            categories: ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des']
+        },
+        yaxis: {
+            title: { text: 'Jumlah' }
+        },
+        grid: {
+            show: true,
+            borderColor: '#e0e6ed',
+            strokeDashArray: 0,
+        },
+        fill: {
+            opacity: 1,
+            colors: ['#435ebe'] // warna solid (bukan transparan)
+        },
+        tooltip: {
+            y: {
+                formatter: function (val) {
+                    return val.toLocaleString('id-ID');
+                }
+            }
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#profileChart"), options);
+    chart.render();
+
+    // ============= PIE CHART =============
+    const status = @json($statusPie);
+    const ctx2 = document.getElementById('chartStatus').getContext('2d');
+
+    new Chart(ctx2, {
+        type: 'pie',
+        data: {
+            labels: ['Belum Verifikasi', 'Diterima', 'Ditolak'],
+            datasets: [{
+                data: [status.belum, status.terima, status.tolak],
+                backgroundColor: ['#FFBB33','#00C851','#ff4444'],
+                borderColor:'#fff',borderWidth:2
+            }]
+        },
+        options:{
+            responsive:true,
+            plugins:{
+                legend:{ position:'bottom' },
+                tooltip:{
+                    callbacks:{
+                        label:(c)=>`${c.label}: ${c.raw.toLocaleString('id-ID')} data`
+                    }
+                }
+            }
+        }
+    });
+
+});
+</script>

@@ -17,6 +17,7 @@ use App\Http\Controllers\LapRekaptppController;
 use App\Http\Controllers\MaintenanceController;
 use App\Http\Controllers\Master\AkunPajakController;
 use App\Http\Controllers\Opd\InputPajakController;
+use App\Http\Controllers\Opd\Sp2dController as OpdSp2dController;
 use App\Http\Controllers\OpdController;
 use App\Http\Controllers\PajakTbpController;
 use App\Http\Controllers\PdfUploadController;
@@ -215,3 +216,17 @@ Route::prefix('bpkad/kpp')->middleware('auth')->group(function () {
     Route::post('/rekon-pajak-kpp/unposting-massal', [RekonPajakKppController::class, 'unPostingMassal'])->name('kpp.rekon.unposting.massal');
     Route::get('/rekon-pajak-kpp/export',[RekonPajakKppController::class, 'export'])->name('kpp.rekon.export');
 });
+
+
+//Tarik data SP2D
+Route::get('/sp2d/index', [Sp2dController::class, 'index'])->middleware('auth:web','checkRole:Admin');
+Route::post('/sp2d/tarik', [Sp2dController::class, 'import'])->middleware('auth:web','checkRole:Admin');
+Route::get('/sp2d/data', [Sp2dController::class, 'data'])->middleware('auth:web','checkRole:Admin');
+Route::get('/sp2d/detail/{id}', [Sp2dController::class, 'detail'])->middleware('auth:web','checkRole:Admin');
+
+Route::get('/sp2d/ls', [Sp2dController::class, 'dataLS'])->middleware('auth:web','checkRole:Admin');
+Route::get('/sp2d/gu', [Sp2dController::class, 'dataGU'])->middleware('auth:web','checkRole:Admin');
+Route::get('/sp2d/kkpd', [Sp2dController::class, 'dataKKPD'])->middleware('auth:web','checkRole:Admin');
+Route::get('/sp2d/hapus', [Sp2dController::class, 'dataHapus'])->middleware('auth:web','checkRole:Admin');
+Route::post('/sp2d/restore', [Sp2dController::class, 'restore'])->middleware('auth:web','checkRole:Admin');
+
