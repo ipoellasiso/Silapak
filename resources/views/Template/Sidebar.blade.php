@@ -111,7 +111,7 @@
                             <a href="#" class="submenu-link">Data Pajak</a>
                                 <ul class="submenu submenu-level-2 ">
                                     <li class="submenu-item @if(isset($active_sidedatapajakls)){{ $active_sidedatapajakls }} @endif">
-                                        <a href="#" class="submenu-link">LS</a>
+                                        <a href="/bpkad/pajak-ls/pajakls" class="submenu-link">LS</a>
                                     </li>
                                     <li class="submenu-item @if(isset($active_sidedatapajakgu)){{ $active_sidedatapajakhu }} @endif">
                                         <a href="/bpkad/laporan-pajak-kpp" class="submenu-link">GU</a>

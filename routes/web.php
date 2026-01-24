@@ -1,39 +1,16 @@
 <?php
 
-use App\Http\Controllers\AnggaranController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BankController;
-use App\Http\Controllers\BkuController;
 use App\Http\Controllers\Bpkad\LaporanPajakKppController;
 use App\Http\Controllers\Bpkad\RekonPajakKppController;
 use App\Http\Controllers\Bpkad\VerifikasiTbpController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\KamarController;
-use App\Http\Controllers\KamarControlleruser;
-use App\Http\Controllers\Landing_pageController;
-use App\Http\Controllers\LaporanlsController;
-use App\Http\Controllers\LaporanRealisasiController;
-use App\Http\Controllers\LapRekaptppController;
-use App\Http\Controllers\MaintenanceController;
+use App\Http\Controllers\Bpkad\LaporanPajakLsController;
 use App\Http\Controllers\Master\AkunPajakController;
 use App\Http\Controllers\Opd\InputPajakController;
-use App\Http\Controllers\Opd\Sp2dController as OpdSp2dController;
 use App\Http\Controllers\OpdController;
 use App\Http\Controllers\PajakTbpController;
-use App\Http\Controllers\PdfUploadController;
-use App\Http\Controllers\PeriodeController;
-use App\Http\Controllers\Realisasi_hd_Controller;
-use App\Http\Controllers\Realisasi_HD_Controller as ControllersRealisasi_HD_Controller;
-use App\Http\Controllers\RealisasiController;
-use App\Http\Controllers\RealisasiControllerAdmin;
-use App\Http\Controllers\RekapantppController;
-use App\Http\Controllers\RekeningController;
-use App\Http\Controllers\ScanSp2dJsonController;
-use App\Http\Controllers\SimpanSp2dsipdController;
 use App\Http\Controllers\Sp2dController;
-use App\Http\Controllers\Sp2dLogController;
-use App\Http\Controllers\TarikSp2dController;
-use App\Http\Controllers\UrusanController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -230,3 +207,23 @@ Route::get('/sp2d/kkpd', [Sp2dController::class, 'dataKKPD'])->middleware('auth:
 Route::get('/sp2d/hapus', [Sp2dController::class, 'dataHapus'])->middleware('auth:web','checkRole:Admin');
 Route::post('/sp2d/restore', [Sp2dController::class, 'restore'])->middleware('auth:web','checkRole:Admin');
 
+// Input Pajak LS
+Route::prefix('bpkad/pajak-ls')->middleware(['auth:web','checkRole:Admin'])->group(function () {
+
+    Route::get('/pajakls', [LaporanPajakLsController::class, 'index'])
+        ->name('pajak.ls.index');
+
+    Route::get('/belum-input', [LaporanPajakLsController::class, 'dataBelumInput'])
+        ->name('pajak.ls.belum');
+
+    Route::get('/sudah-input', [LaporanPajakLsController::class, 'dataSudahInput'])
+        ->name('pajak.ls.sudah');
+
+    Route::get('/detail/{id}', [LaporanPajakLsController::class, 'detail'])
+        ->name('pajak.ls.detail');
+
+    Route::post('/simpan', [LaporanPajakLsController::class, 'simpan'])
+        ->name('pajak.ls.simpan');
+    
+    Route::get('/log/{id}', [LaporanPajakLsController::class, 'log']);
+});

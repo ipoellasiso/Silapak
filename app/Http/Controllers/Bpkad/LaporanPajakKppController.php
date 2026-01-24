@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use App\Exports\LaporanPajakKppExport;
+use App\Models\TbSp2d;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Storage;
@@ -108,35 +109,35 @@ class LaporanPajakKppController extends Controller
             ->make(true);
     }
 
+    /* =====================================================
+     * BASE QUERY
+     * ===================================================== */
     private function baseQuery(Request $request)
     {
         $query = DB::table('tb_tbp as tbp')
-        ->join('tb_potongangu as pot','tbp.id_tbp','=','pot.id_tbp')
-        ->whereYear('tbp.tanggal_tbp', $this->tahunAktif) // ✅ FIX
-        ->where('pot.status3','INPUT');
+            ->join('tb_potongangu as pot','tbp.id_tbp','=','pot.id_tbp')
+            ->whereYear('tbp.tanggal_tbp', $this->tahunAktif)
+            ->where('pot.status3','INPUT');
 
-        // 🔹 FILTER OPD
         if ($request->opd) {
             $query->where('tbp.nama_skpd', $request->opd);
         }
 
-        // 🔹 FILTER TAHUN
         if ($request->tahun) {
             $query->whereYear('tbp.tanggal_tbp', $request->tahun);
         }
 
-        // 🔹 FILTER BULAN
         if ($request->bulan) {
             $query->whereMonth('tbp.tanggal_tbp', $request->bulan);
         }
 
         return $query->select(
-            'pot.id', // 🔥 TAMBAHKAN
-            'pot.bukti_setoran',
+            'pot.id',
             'pot.status4',
+            'pot.bukti_setoran',
             'tbp.no_spm',
-            'tbp.nama_skpd',
             'tbp.nomor_tbp',
+            'tbp.nama_skpd',
             'tbp.tanggal_tbp',
             'pot.rek_belanja',
             'pot.akun_pajak',
@@ -149,150 +150,140 @@ class LaporanPajakKppController extends Controller
         );
     }
 
+    /* =====================================================
+     * DATA SUDAH SP2D
+     * ===================================================== */
     public function dataSudahSp2d(Request $request)
     {
-        $sp2d = $this->getSp2dCache();
-        $sp2dBySpm = $sp2d->keyBy(fn($i)=>trim($i['nomor_spm']));
+        $query = DB::table('tb_tbp as tbp')
+            ->join('tb_potongangu as pot','tbp.id_tbp','=','pot.id_tbp')
+            ->join('tb_sp2d as sp2d', function ($join) {
+                $join->on(
+                    DB::raw('sp2d.nomor_spm COLLATE utf8mb4_general_ci'),
+                    '=',
+                    DB::raw('tbp.no_spm COLLATE utf8mb4_general_ci')
+                );
+            })
+            ->where('pot.status3', 'INPUT');
 
-        // 1️⃣ AMBIL DATA DASAR
-        $rows = $this->baseQuery($request)->get();
-
-        // 2️⃣ FILTER SUDAH SP2D
-        $rows = $rows->filter(function ($row) use ($sp2dBySpm) {
-            return isset($sp2dBySpm[trim($row->no_spm)]);
-        });
-
-        // 3️⃣ 🔍 SEARCH MANUAL (SPM / TBP / NTPN / BILLING)
-        if ($request->search && $request->search['value']) {
-            $keyword = strtolower(trim($request->search['value']));
-
-            $rows = $rows->filter(function ($row) use ($keyword) {
-                return str_contains(strtolower($row->no_spm), $keyword)
-                    || str_contains(strtolower($row->nomor_tbp ?? ''), $keyword)
-                    || str_contains(strtolower($row->ntpn ?? ''), $keyword)
-                    || str_contains(strtolower($row->id_billing ?? ''), $keyword);
-            });
+        // ✅ FILTER OPD
+        if ($request->opd) {
+            $query->where('tbp.nama_skpd', $request->opd);
         }
 
-        return DataTables::of($rows)
-            ->addIndexColumn()
+        // ✅ FILTER TAHUN & BULAN PAKAI TBP
+        if ($request->tahun) {
+            $query->whereYear('tbp.tanggal_tbp', $request->tahun);
+        }
 
-            ->addColumn('tanggal_sp2d', fn($r)=>
-                $sp2dBySpm[trim($r->no_spm)]['tanggal_sp2d'] ?? '-'
-            )
-            ->addColumn('nomor_sp2d', fn($r)=>
-                $sp2dBySpm[trim($r->no_spm)]['nomor_sp2d'] ?? '-'
-            )
-            ->addColumn('nilai_sp2d', fn($r)=>
-                number_format($sp2dBySpm[trim($r->no_spm)]['nilai_sp2d'] ?? 0)
-            )
-            ->editColumn('nilai_pajak', fn($r)=>number_format($r->nilai_pajak))
+        if ($request->bulan) {
+            $query->whereMonth('tbp.tanggal_tbp', $request->bulan);
+        }
 
-            ->addColumn('pajak', function ($r) {
-                return '
-                    <div class="pajak-box">
-                        <div><span class="badge bg-info">Jenis</span> '.$r->jenis_pajak.'</div>
-                        <div><span class="badge bg-secondary">Akun</span> '.$r->akun_pajak.'</div>
-                        <div><span class="badge bg-warning text-dark">Billing</span> '.$r->id_billing.'</div>
-                        <div><span class="badge bg-success">NTPN</span> '.$r->ntpn.'</div>
-                    </div>
-                ';
-            })
+        $query->select(
+            'pot.id',
+            'pot.status4',
+            'tbp.no_spm',
+            'tbp.tanggal_tbp',
+            'sp2d.tanggal_sp2d',
+            'sp2d.nomor_sp2d',
+            'sp2d.nilai_sp2d',
+            'pot.nama_pajak_potongan as jenis_pajak',
+            'pot.akun_pajak',
+            'pot.id_billing',
+            'pot.ntpn',
+            'pot.nilai_tbp_pajak_potongan as nilai_pajak'
+        );
 
-            ->addColumn('aksi', function ($r) {
-                // JIKA STATUS4 = POSTING -> TIDAK ADA EDIT
-                if ($r->status4 === 'POSTING') {
-                    return '<span class="badge bg-success">POSTING</span>';
-                }
+        return DataTables::of($query)
 
-                // SELAIN ITU -> BISA EDIT
-                return '
-                    <button class="btn btn-sm btn-primary btn-edit"
-                        data-id="'.$r->id.'"
-                        title="Edit Pajak">
+        // 🔥 INI LETAKNYA (WAJIB DI SINI)
+        ->filter(function ($query) use ($request) {
+            if ($search = $request->input('search.value')) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('pot.ntpn', 'like', "%{$search}%")
+                    ->orWhere('pot.id_billing', 'like', "%{$search}%")
+                    ->orWhere('tbp.no_spm', 'like', "%{$search}%")
+                    ->orWhere('sp2d.nomor_sp2d', 'like', "%{$search}%");
+                });
+            }
+        })
+
+        ->addIndexColumn()
+        ->editColumn('nilai_sp2d', fn($r)=>number_format($r->nilai_sp2d))
+        ->editColumn('nilai_pajak', fn($r)=>number_format($r->nilai_pajak))
+
+        ->addColumn('pajak', fn($r)=>'
+            <div>
+                <span class="badge bg-info">Jenis</span> '.$r->jenis_pajak.'<br>
+                <span class="badge bg-secondary">Akun</span> '.$r->akun_pajak.'<br>
+                <span class="badge bg-warning text-dark">Billing</span> '.$r->id_billing.'<br>
+                <span class="badge bg-success">NTPN</span> '.$r->ntpn.'
+            </div>
+        ')
+
+        ->addColumn('aksi', function ($r) {
+            return $r->status4 === 'POSTING'
+                ? '<span class="badge bg-success">POSTING</span>'
+                : '<button class="btn btn-sm btn-primary btn-edit" data-id="'.$r->id.'">
                         <i class="fas fa-edit"></i>
-                    </button>
-                ';
-            })
+                </button>';
+        })
 
-            ->rawColumns(['pajak','aksi'])
-            ->make(true);
+        ->rawColumns(['pajak','aksi'])
+        ->make(true);
     }
 
+    /* =====================================================
+     * DATA BELUM SP2D
+     * ===================================================== */
     public function dataBelumSp2d(Request $request)
     {
-        $sp2dSpm = collect(
-            Http::get('http://127.0.0.1:8001/api/sp2d')->json()
-        )->pluck('nomor_spm')->map(fn($v)=>trim($v));
+        $spmSudahSp2d = TbSp2d::where('tahun', $this->tahunAktif)
+            ->pluck('nomor_spm')
+            ->map(fn($v)=>trim($v));
 
         $query = $this->baseQuery($request)
-            ->whereNotIn('tbp.no_spm', $sp2dSpm);
+            ->whereNotIn('tbp.no_spm', $spmSudahSp2d);
 
         return DataTables::of($query)
             ->addIndexColumn()
 
-            ->filterColumn('nilai_pajak', function ($query, $keyword) {
-                $query->where('pot.nilai_tbp_pajak_potongan', 'like', "%{$keyword}%");
-            })
-            
-            ->addColumn('status_sp2d', function () {
-                return '
-                    <div class="text-center">
-                        <span class="badge bg-danger px-3 py-2">
-                            ❌ Belum SP2D
-                        </span>
-                    </div>
-                ';
-            })
-            ->rawColumns(['status_sp2d'])
             ->editColumn('nilai_pajak', fn($r)=>number_format($r->nilai_pajak))
-            ->editColumn('tbp', function ($r) {
-                return '
-                    <div class="">
-                        <div class="mt-1">
-                            <strong>SKPD</strong><br>'.$r->nama_skpd.'
-                        </div>
-                        <div class="mt-1">
-                            <strong>TBP</strong><br>'.($r->nomor_tbp ?? '-').'
-                        </div>
-                    </div>
-                ';
-            })
+
+            ->addColumn('status_sp2d', fn()=>'
+                <span class="badge bg-danger">❌ Belum SP2D</span>
+            ')
+
+            ->addColumn('tbp', fn($r)=>'
+                <strong>SKPD</strong><br>'.$r->nama_skpd.'<br>
+                <strong>TBP</strong><br>'.($r->nomor_tbp ?? '-').'
+            ')
+
             ->addColumn('aksi', function ($r) {
 
-                $btnEdit = '';
-                if ($r->status4 !== 'POSTING') {
-                    $btnEdit = '
-                        <button class="btn btn-sm btn-primary btn-edit"
-                            data-id="'.$r->id.'" title="Edit Pajak">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                    ';
-                }
+                $edit = $r->status4 !== 'POSTING'
+                    ? '<button class="btn btn-sm btn-primary btn-edit" data-id="'.$r->id.'">
+                        <i class="fas fa-edit"></i></button>'
+                    : '';
 
-                $btnView = '';
-                if ($r->bukti_setoran) {
-                    $btnView = '
-                        <a href="'.asset('storage/'.$r->bukti_setoran).'"
+                $view = $r->bukti_setoran
+                    ? '<a href="'.asset('storage/'.$r->bukti_setoran).'"
                         target="_blank"
-                        class="btn btn-sm btn-info"
-                        title="Lihat Bukti Setoran">
-                        <i class="fas fa-eye"></i>
-                        </a>
-                    ';
-                }
+                        class="btn btn-sm btn-info">
+                        <i class="fas fa-eye"></i></a>'
+                    : '';
 
-                return '
-                    <div class="d-flex justify-content-center gap-1">
-                        '.$btnEdit.'
-                        '.$btnView.'
-                    </div>
-                ';
+                return '<div class="d-flex gap-1">'.$edit.$view.'</div>';
             })
-            ->rawColumns(['status_sp2d','tbp', 'aksi'])
+
+            ->rawColumns(['status_sp2d','tbp','aksi'])
             ->make(true);
     }
 
+    /* =====================================================
+     * Posting Massal
+     * ===================================================== */
     public function postingMassal(Request $request)
     {
         $request->validate([
@@ -332,76 +323,9 @@ class LaporanPajakKppController extends Controller
         ]);
     }
 
-    // public function dataBelumPosting(Request $request)
-    // {
-    //     $sp2d = Http::get('http://127.0.0.1:8001/api/sp2d')->json();
-    //     $sp2dBySpm = collect($sp2d)->keyBy(fn($i)=>trim($i['nomor_spm']));
-
-    //     $query = DB::table('tb_tbp as tbp')
-    //         ->join('tb_potongangu as pot','tbp.id_tbp','=','pot.id_tbp')
-    //         ->where('pot.status3','INPUT')        // sudah input
-    //         ->whereNull('pot.status4')             // 🔥 BELUM POSTING
-    //         ->whereYear('tbp.tanggal_tbp', $request->tahun);
-
-    //     if ($request->bulan) {
-    //         $query->whereMonth('tbp.tanggal_tbp', $request->bulan);
-    //     }
-
-    //     if ($request->opd) {
-    //         $query->where('tbp.nama_skpd', $request->opd);
-    //     }
-
-    //     $query->select(
-    //         'tbp.no_spm',
-    //         'tbp.nomor_tbp',
-    //         'tbp.nama_skpd',
-    //         'pot.nama_pajak_potongan as jenis_pajak',
-    //         'pot.nilai_tbp_pajak_potongan as nilai_pajak'
-    //     );
-
-    //     return DataTables::of($query)
-    //         ->addIndexColumn()
-
-    //         ->editColumn('no_spm', function ($r) {
-    //             return '
-    //                 <div>
-    //                     <strong>SKPD:</strong> '.$r->nama_skpd.'<br>
-    //                     <strong>SPM:</strong> '.$r->no_spm.'<br>
-    //                     <strong>TBP:</strong> '.$r->nomor_tbp.'
-    //                 </div>
-    //             ';
-    //         })
-
-    //         ->editColumn('nilai_pajak', fn($r)=>number_format($r->nilai_pajak))
-
-    //         ->addColumn('status', function () {
-    //             return '
-    //                 <span class="badge bg-warning text-dark">
-    //                     ⏳ Belum Posting
-    //                 </span>
-    //             ';
-    //         })
-
-    //         ->rawColumns(['no_spm','status'])
-    //         ->make(true);
-    // }
-
-    // public function export(Request $request)
-    // {
-    //     $request->validate([
-    //         'tahun' => 'required'
-    //     ]);
-
-    //     return Excel::download(
-    //         new LaporanPajakKppExport(
-    //             $request->tahun,
-    //             $request->bulan,
-    //             $request->opd
-    //         ),
-    //         'Laporan_Pajak_KPP_'.$request->tahun.'.xlsx'
-    //     );
-    // }
-
+    /* =====================================================
+     * DETAIL
+     * ===================================================== */
     public function detail($id)
     {
         return DB::table('tb_potongangu')
@@ -415,6 +339,9 @@ class LaporanPajakKppController extends Controller
             ->first();
     }
 
+    /* =====================================================
+     * SIMPAN
+     * ===================================================== */
     public function simpan(Request $request)
     {
         $pajak = TbPotonganGu::findOrFail($request->id);
@@ -552,15 +479,6 @@ class LaporanPajakKppController extends Controller
         return response()->json([
             'message' => 'Data pajak berhasil diperbarui oleh BPKAD'
         ]);
-    }
-
-    private function getSp2dCache()
-    {
-        return Cache::remember('sp2d_api_cache', 300, function () {
-            return collect(
-                Http::get('http://127.0.0.1:8001/api/sp2d')->json()
-            );
-        });
     }
 
 }

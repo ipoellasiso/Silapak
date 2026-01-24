@@ -14,29 +14,38 @@
 
         // 🔹 SIMPAN INSTANCE KE VARIABLE
         let tableSudah = $('#table-sudah').DataTable({
-            processing:true,
-            serverSide:false,
-            searching: true, // 🔥
-            deferLoading: 0, // ⛔ jangan auto load
-            ajax: {
-                url: "{{ route('laporan.kpp.sudah') }}",
-                data: function (d) {
-                    d.opd   = $('#filter-opd').val();
-                    d.bulan = $('#filter-bulan').val();
-                    d.tahun = $('#filter-tahun').val();
-                }
-            },
-            columns:[
-                {data:'DT_RowIndex', title:'No', orderable:false, searchable:false, className:'text-center align-middle',},
-                {data:'no_spm', title:'No SPM',}, // ✅
-                {data:'tanggal_sp2d', title:'Tgl SP2D', className:'text-center align-middle',},
-                {data:'nomor_sp2d', title:'No SP2D', className:'text-center align-middle',},
-                {data:'nilai_sp2d', title:'Nilai SP2D', className:'text-end align-middle',},
-                {data:'pajak', title:'Pajak', searchable:false}, // ✅
-                {data:'nilai_pajak', title:'Nilai Pajak', className:'text-end align-middle',},
-                {data:'aksi', title:'Aksi', orderable:false, searchable:false, className:'text-center',}
-            ]
-        });
+        processing: true,
+        serverSide: true,
+        searching: true,
+        ajax: {
+            url: "{{ route('laporan.kpp.sudah') }}",
+            data: function (d) {
+                d.opd   = $('#filter-opd').val();
+                d.bulan = $('#filter-bulan').val();
+                d.tahun = $('#filter-tahun').val();
+            }
+        },
+        columns: [
+            { data:'DT_RowIndex', title:'No', orderable:false, searchable:false },
+
+            // ✅ KOLOM ASLI SQL
+            { data:'no_spm', title:'No SPM', searchable:true },
+
+            // ❌ JANGAN DI-SEARCH (JOIN)
+            { data:'tanggal_sp2d', title:'Tgl SP2D', searchable:false },
+            { data:'nomor_sp2d', title:'No SP2D', searchable:true }, // ini aman
+
+            { data:'nilai_sp2d', title:'Nilai SP2D', searchable:false },
+
+            // ❌ HTML
+            { data:'pajak', title:'Pajak', searchable:false },
+
+            // ❌ FORMAT ANGKA
+            { data:'nilai_pajak', title:'Nilai Pajak', searchable:false },
+
+            { data:'aksi', title:'Aksi', orderable:false, searchable:false }
+        ]
+    });
 
         let tableBelumLoaded = false;
         $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {

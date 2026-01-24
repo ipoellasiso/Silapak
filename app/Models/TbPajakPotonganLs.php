@@ -10,7 +10,7 @@ class TbPajakPotonganLs extends Model
     protected $table = 'tb_pajak_potonganls';
     protected $fillable = [
         'sp2d_id','id_pajak_potongan','nama_pajak_potongan','kode_sinergi',
-        'nama_sinergi','id_billing','nilai_sp2d_pajak_potongan'
+        'nama_sinergi','id_billing','nilai_sp2d_pajak_potongan', 'status1', 'status2', 'ntpn', 'akun_pajak', 'rek_belanja', 'koreksi_kpp'
     ];
 
     public function sp2d()
