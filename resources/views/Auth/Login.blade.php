@@ -89,7 +89,7 @@ body {
                 <!-- <h2>Welcome back</h2> -->
                 <div class="app-logo">
                     <img src="/app/assets/images/112a.png" style="width: 100%; height: 100%"  alt="Logo" srcset="">
-                    <span>Silahkan Login</span>
+                    <span>Silahkan Login Bang</span>
                 </div>
             </div>
             
