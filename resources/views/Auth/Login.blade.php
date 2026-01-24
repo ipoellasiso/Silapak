@@ -3,167 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neumorphism Login Form</title>
+    <title>Silapak - Halaman Login</title>
     <link rel="stylesheet" href="{{ asset('auth/style.css') }}">
 </head>
 
 <style>
-    /* === Neumorphism Select (GLOBAL) === */
-.neu-select select {
-    width: 100%;
-    appearance: none;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    color: #3d4468;
-    padding: 20px 24px;
-    padding-left: 55px;
-    cursor: pointer;
-}
-
-.neu-select label {
-    position: absolute;
-    left: 55px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9499b7;
-    font-size: 16px;
-    pointer-events: none;
-    transition: all 0.3s ease;
-}
-
-.neu-select select:focus + label,
-.neu-select select.has-value + label {
-    top: 8px;
-    font-size: 12px;
-    color: #6c7293;
-}
-
-.neu-select .input-icon {
-    pointer-events: none;
+/* ================= GLOBAL ================= */
+* {
+    box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Segoe UI', system-ui, sans-serif;
     min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg,#4f5ec2 0%,#eef3f8 45%,#40bd6e 100%);
+}
+
+/* ================= LAYOUT ================= */
+.login-page {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-
-    background: linear-gradient(
-        135deg,
-        #4f5ec2 0%,
-        #f2f7fb 40%,
-        #40bd6e 100%
-    );
+    min-height: 100vh;
+    gap: 80px;
+    padding: 40px;
 }
 
+/* ================= LOGIN CARD ================= */
 .login-card {
+    width: 380px;
+    background: rgba(255,255,255,0.75);
+    backdrop-filter: blur(14px);
+    border-radius: 22px;
+    padding: 40px 32px;
+    box-shadow:
+        0 20px 45px rgba(0,0,0,.18),
+        inset 0 0 0 1px rgba(255,255,255,.4);
+    z-index: 2;
+}
+
+/* ================= HEADER ================= */
+.login-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.login-header img {
+    width: 150px;
+    margin-bottom: 12px;
+}
+
+.login-header span {
+    display: block;
+    font-size: 15px;
+    color: #5b638b;
+}
+
+/* ================= INPUT ================= */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.neu-input {
+    position: relative;
+}
+
+.neu-input input,
+.neu-input select {
+    width: 100%;
+    border: none;
+    outline: none;
     background: #eef3f8;
+    border-radius: 14px;
+    padding: 18px 20px;
+    font-size: 15px;
+    box-shadow:
+        inset 4px 4px 8px #d9dee5,
+        inset -4px -4px 8px #ffffff;
 }
 
-.login-header h2 {
-    color: #1f4fa3;
+.neu-input label {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #8891b2;
+    pointer-events: none;
+    transition: .3s;
 }
 
-.neu-button {
-    color: #1f4fa3;
+.neu-input input:focus + label,
+.neu-input input:not(:placeholder-shown) + label {
+    top: 6px;
+    font-size: 11px;
+}
+
+/* ================= BUTTON ================= */
+.login-btn {
+    width: 100%;
+    margin-top: 10px;
+    border: none;
+    border-radius: 16px;
+    padding: 15px;
+    font-size: 16px;
     font-weight: 700;
+    color: #1f4fa3;
+    background: #eef3f8;
+    cursor: pointer;
+    box-shadow:
+        6px 6px 14px #d0d6e1,
+        -6px -6px 14px #ffffff;
+    transition: .3s;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* ================= SIDE LOGO ================= */
+.side-logo {
+    width: 260px;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+}
+
+.side-logo img {
+    width: 200px;
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,.25));
+    animation: float 4s ease-in-out infinite;
+}
+
+/* ================= ANIMATION ================= */
+.side-logo.left {
+    animation: slideLeft 1.2s ease forwards;
+}
+
+.side-logo.right {
+    animation: slideRight 1.2s ease forwards;
+    animation-delay: .3s;
+}
+
+@keyframes slideLeft {
+    from { opacity: 0; transform: translateX(-100px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideRight {
+    from { opacity: 0; transform: translateX(100px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes float {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-14px); }
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 992px) {
+    .side-logo {
+        display: none;
+    }
+
+    .login-page {
+        gap: 0;
+    }
 }
 </style>
+</head>
 
 <body>
-    <div class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <div class="neu-icon">
-                    <div class="icon-inner">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                            <circle cx="12" cy="7" r="4"/>
-                        </svg>
-                    </div>
-                </div>
-                <!-- <h2>Welcome back</h2> -->
-                <div class="app-logo">
-                    <img src="/app/assets/images/112a.png" style="width: 100%; height: 100%"  alt="Logo" srcset="">
-                    <span>Silahkan Login Bang</span>
-                </div>
-            </div>
-            
-            {{-- FORM LOGIN --}}
-        <form method="POST" class="my-login-validation" action="/cek_login">
+
+<div class="login-page">
+
+    {{-- LOGO KIRI --}}
+    <div class="side-logo left">
+        <img src="/app/assets/images/logo/13.png" style="width: 30%; height: 30%" alt="Logo Kota Palu">
+    </div>
+
+    {{-- LOGIN CARD --}}
+    <div class="login-card">
+
+        <div class="login-header">
+            <img src="/app/assets/images/logo-silapak.png" alt="Sistem Informasi Pelaporan Pajak Daerah Kota Palu">
+            <span>Silahkan Login</span>
+        </div>
+
+        <form method="POST" action="/cek_login">
             @csrf
 
-            {{-- SELECT TAHUN --}}
             <div class="form-group">
-                <div class="input-group neu-input neu-select">
+                <div class="neu-input">
                     <select name="tahun" required>
                         <option value="" disabled selected hidden></option>
-                        <option value="2025">2025</option>
-                        <option value="2026">2026</option>
+                        <option>2025</option>
+                        <option>2026</option>
                     </select>
                     <label>Tahun Anggaran</label>
-
-                    <div class="input-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </div>
                 </div>
             </div>
 
-            {{-- EMAIL --}}
             <div class="form-group">
-                <div class="input-group neu-input">
-                    <input type="email" id="email" name="email" required autocomplete="email" placeholder=" ">
-                    <label for="email">Email address</label>
-                    <div class="input-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                            <polyline points="22,6 12,13 2,6"/>
-                        </svg>
-                    </div>
+                <div class="neu-input">
+                    <input type="email" name="email" required placeholder=" ">
+                    <label>Email</label>
                 </div>
-                <span class="error-message" id="emailError"></span>
             </div>
 
-            {{-- PASSWORD --}}
             <div class="form-group">
-                <div class="input-group neu-input password-group">
-                    <input type="password" id="password" name="password" required autocomplete="current-password" placeholder=" ">
-                    <label for="password">Password</label>
-                    <div class="input-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                            <path d="M7 11V7a5 5 0 0110 0v4"/>
-                        </svg>
-                    </div>
-                    <button type="button" class="password-toggle neu-toggle" id="passwordToggle" aria-label="Toggle password visibility">
-                        <svg class="eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                        <svg class="eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                            <line x1="1" y1="1" x2="23" y2="23"/>
-                        </svg>
-                    </button>
+                <div class="neu-input">
+                    <input type="password" name="password" required placeholder=" ">
+                    <label>Password</label>
                 </div>
-                <span class="error-message" id="passwordError"></span>
             </div>
 
-            {{-- BUTTON --}}
-            <button type="submit" class="neu-button login-btn">
-                Login
-            </button>
+            <button class="login-btn">Login</button>
 
         </form>
-
-        </div>
     </div>
+
+    {{-- LOGO KANAN --}}
+    <div class="side-logo right">
+        <img src="/app/assets/images/112a.png" style="width: 100%; height: 100%" alt="SiLAPAK">
+    </div>
+
+</div>
 
     {{-- ================= SWEETALERT2 ================= --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
