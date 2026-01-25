@@ -406,7 +406,7 @@
     </div>
 
     {{-- Swetalert Toast --}}
-    <div class="container my-3">
+    <!-- <div class="container my-3">
         @if (@session('success'))
             <script>
                 // swal.fire({
@@ -487,7 +487,7 @@
                 })
             </script>
         @endif
-    </div>
+    </div> -->
 
 <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </body>
