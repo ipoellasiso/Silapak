@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TbSp2d;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserModel;
+use Carbon\Carbon;
+use App\Exports\PajakLsBelumInputExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HomeController extends Controller
 {
@@ -53,6 +57,23 @@ class HomeController extends Controller
         $statusTerima = DB::table('tb_potongangu')->where('status1', 0)->count();
         $statusTolak  = DB::table('tb_potongangu')->where('status1', 2)->count();
 
+        $pajakLsBelumInput = $this->pajakLsBelumInput();
+        $totalPajakBelumInput = 0;
+
+        foreach ($pajakLsBelumInput as $sp2d) {
+            $totalPajakBelumInput += $sp2d->pajakPotonganLs
+                ->whereNull('status1')
+                ->filter(function ($pajak) {
+                    return
+                        str_contains($pajak->nama_pajak_potongan, 'PPH 21') ||
+                        str_contains($pajak->nama_pajak_potongan, 'Pajak Pertambahan Nilai') ||
+                        str_contains($pajak->nama_pajak_potongan, 'Pajak Penghasilan Ps 22') ||
+                        str_contains($pajak->nama_pajak_potongan, 'Pajak Penghasilan Ps 23') ||
+                        str_contains($pajak->nama_pajak_potongan, 'Pajak Penghasilan Pasal 4 ayat (2)');
+                })
+                ->count();
+        }
+
         // ================ RETURN DATA ==================
         return view('Dashboard.Dashboard_admin', [
             'title'       => 'Dashboard',
@@ -72,7 +93,37 @@ class HomeController extends Controller
                 'belum'  => $statusBelum,
                 'terima' => $statusTerima,
                 'tolak'  => $statusTolak
-            ]
+            ],
+            'pajakLsBelumInput'   => $pajakLsBelumInput,
+            'totalPajakBelumInput'  => $totalPajakBelumInput,
         ]);
     }
+
+    public function pajakLsBelumInput()
+    {
+        $batasHari = Carbon::now()->subDays(2)->startOfDay();
+
+        return TbSp2d::whereDate('tanggal_sp2d', '<=', $batasHari)
+            ->whereHas('pajakPotonganLs', function ($p) {
+                $p->whereNull('status1')
+                ->where(function ($q) {
+                    $q->where('nama_pajak_potongan', 'like', '%PPH 21%')
+                        ->orWhere('nama_pajak_potongan', 'like', '%Pajak Pertambahan Nilai%')
+                        ->orWhere('nama_pajak_potongan', 'like', '%Pajak Penghasilan Ps 22%')
+                        ->orWhere('nama_pajak_potongan', 'like', '%Pajak Penghasilan Ps 23%')
+                        ->orWhere('nama_pajak_potongan', 'like', '%Pajak Penghasilan Pasal 4 ayat (2)%');
+                });
+            })
+            ->distinct()
+            ->get();
+    }
+
+    public function exportPajakLsBelumInput()
+    {
+        return Excel::download(
+            new PajakLsBelumInputExport,
+            'pajak_ls_belum_diinput.xlsx'
+        );
+    }
+
 }

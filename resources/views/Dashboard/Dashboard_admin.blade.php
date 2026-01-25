@@ -17,27 +17,25 @@
         min-height:380px;
     }
     #chartPajak {
-    width: 100% !important;
-    height: 360px !important; /* bebas 300–450px */
-}
+        width: 100% !important;
+        height: 360px !important; /* bebas 300–450px */
+    }
 
-.chart-card {
-    background:#fff;
-    border-radius:14px;
-    padding:18px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.05);
-    height: 420px;
-    display:flex;
-    flex-direction:column;
-}
-#profileChart, #statusChart {
-    flex:1;
-}
+    .chart-card {
+        background:#fff;
+        border-radius:14px;
+        padding:18px;
+        box-shadow:0 4px 12px rgba(0,0,0,0.05);
+        height: 420px;
+        display:flex;
+        flex-direction:column;
+    }
+    #profileChart, #statusChart {
+        flex:1;
+    }
 </style>
 
 <div class="container-fluid py-4">
-
-    {{-- <h2 class="fw-bold mb-4">Dashboard Pajak</h2> --}}
 
     <div class="row g-3 mb-4">
         <div class="col-xl-3 col-md-6">
@@ -226,3 +224,70 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 </script>
+
+{{-- NOTICE PAJAK LS + WHATSAPP ADMIN --}}
+@if($pajakLsBelumInput->count() > 0)
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ================== PESAN WHATSAPP ==================
+    let pesanWa = `
+📢 NOTICE PAJAK LS
+
+Terdapat {{ $pajakLsBelumInput->count() }} SP2D
+dengan {{ $totalPajakBelumInput }} Pajak LS
+yang belum diinput lebih dari 2 hari.
+
+Mohon segera ditindaklanjuti 🙏
+Ayoo semangat Kaka 😄💪😂
+    `;
+
+    // ================== LINK WA ==================
+    let waApp = "whatsapp://send?phone=6285342157722&text=" + encodeURIComponent(pesanWa);
+    let waWeb = "https://wa.me/6285342157722?text=" + encodeURIComponent(pesanWa);
+
+    Swal.fire({
+        icon: 'warning',
+        title: 'NOTICE PAJAK LS',
+        html: `
+            <div style="line-height:1.6">
+                Terdapat <b>{{ $pajakLsBelumInput->count() }}</b> SP2D<br>
+                dengan <b>{{ $totalPajakBelumInput }}</b> Pajak LS<br>
+                yang belum diinput lebih dari 2 hari.<br><br>
+                <small>
+                    mohon diinput ya.. agar tidak menumpuk lebih banyak lagi..<br>
+                    ayoo semangat Kaka 😄💪😂
+                </small>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '📱 Kirim ke WA Group Silapak',
+        cancelButtonText: '📥 Download Excel',
+        confirmButtonColor: '#25D366',
+        cancelButtonColor: '#198754',
+        reverseButtons: true
+    }).then((result) => {
+
+        // 👉 KIRIM KE WA (SATU KLIK)
+        if (result.isConfirmed) {
+
+            // coba buka WA app
+            let timer = setTimeout(() => {
+                window.open(waWeb, '_blank');
+            }, 700);
+
+            window.location.href = waApp;
+
+            // kalau app terbuka, cancel fallback
+            window.addEventListener('blur', () => clearTimeout(timer));
+        }
+
+        // 👉 DOWNLOAD EXCEL
+        if (result.dismiss === Swal.DismissReason.cancel) {
+            window.location.href = "{{ route('pajakls.export-belum-input') }}";
+        }
+
+    });
+});
+</script>
+@endif

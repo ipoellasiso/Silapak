@@ -19,7 +19,7 @@
     </div>
 
     <!-- LOGIN CARD -->
-    <div class="login-card">
+    <div class="login-card glass-card">
 
         <h2>Sistem Informasi Pelaporan Pajak Daerah Kota Palu</h2>
         <p><span>Silahkan Login</span></p>

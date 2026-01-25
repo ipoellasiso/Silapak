@@ -227,3 +227,9 @@ Route::prefix('bpkad/pajak-ls')->middleware(['auth:web','checkRole:Admin'])->gro
     
     Route::get('/log/{id}', [LaporanPajakLsController::class, 'log']);
 });
+
+// Notice Pajak Ls Belum Di input
+Route::get(
+    '/export/pajak-ls-belum-input',
+    [HomeController::class, 'exportPajakLsBelumInput']
+)->name('pajakls.export-belum-input');
