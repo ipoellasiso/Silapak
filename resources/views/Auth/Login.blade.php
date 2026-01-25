@@ -51,7 +51,7 @@
 
 <div id="loadingOverlay">
     <div class="loading-box">
-        <img src="/app/assets/images/112a.png"
+        <img src="/app/assets/images/p.png"
              alt="Loading SILAPAK"
              class="spinner-logo">
         <p>Memverifikasi akun...</p>
