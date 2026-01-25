@@ -120,13 +120,10 @@
                                 </ul>
                         </li>
                         <li class="submenu-item has-sub @if(isset($active_siderekonpajak)){{ $active_siderekonpajak }} @endif">
-                            <a href="#" class="submenu-link">Rekonsiliasi Pajak</a>
+                            <a href="#" class="submenu-link">Validasi Pajak</a>
                                 <ul class="submenu submenu-level-2 ">
-                                    <li class="submenu-item @if(isset($active_siderekonpajakls)){{ $active_siderekonpajakls }} @endif">
-                                        <a href="#" class="submenu-link">LS</a>
-                                    </li>
-                                    <li class="submenu-item @if(isset($active_siderekonpajakgu)){{ $active_siderekonpajakgu }} @endif">
-                                        <a href="/bpkad/kpp/rekon" class="submenu-link">GU</a>
+                                    <li class="submenu-item @if(isset($active_siderekonpajak1)){{ $active_siderekonpajak1 }} @endif">
+                                        <a href="kpp/rekon/pajak" class="submenu-link">Pajak LS & GU</a>
                                     </li>
                                 </ul>
                         </li>

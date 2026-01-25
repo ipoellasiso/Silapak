@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ================== PESAN WHATSAPP ==================
     let pesanWa = `
-📢 NOTICE PAJAK LS
+📢 WARNING PAJAK LS
 
 Terdapat {{ $pajakLsBelumInput->count() }} SP2D
 dengan {{ $totalPajakBelumInput }} Pajak LS
@@ -248,7 +248,7 @@ Ayoo semangat Kaka 😄💪😂
 
     Swal.fire({
         icon: 'warning',
-        title: 'NOTICE PAJAK LS',
+        title: 'WARNING PAJAK LS',
         html: `
             <div style="line-height:1.6">
                 Terdapat <b>{{ $pajakLsBelumInput->count() }}</b> SP2D<br>

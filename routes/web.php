@@ -184,14 +184,15 @@ Route::prefix('bpkad')->middleware(['auth'])->group(function () {
 });
 
 // REKON KE KPP
-Route::prefix('bpkad/kpp')->middleware('auth')->group(function () {
-    Route::get('/rekon', [RekonPajakKppController::class,'index'])->name('kpp.rekon');
-    Route::get('/rekon/data', [RekonPajakKppController::class,'data'])->name('kpp.rekon.data');
-    Route::post('/rekon/posting', [RekonPajakKppController::class,'posting'])->name('kpp.rekon.posting');
-    // Route::get('/rekon/export', [RekonPajakKppController::class,'export'])->name('kpp.rekon.export');
-    Route::post('/rekon-pajak-kpp/unposting', [RekonPajakKppController::class, 'unPosting'])->name('kpp.rekon.unposting');
-    Route::post('/rekon-pajak-kpp/unposting-massal', [RekonPajakKppController::class, 'unPostingMassal'])->name('kpp.rekon.unposting.massal');
-    Route::get('/rekon-pajak-kpp/export',[RekonPajakKppController::class, 'export'])->name('kpp.rekon.export');
+Route::prefix('kpp/rekon')->group(function () {
+    Route::get('/pajak', [RekonPajakKppController::class, 'index'])->name('kpp.rekon.index');
+    Route::get('/data', [RekonPajakKppController::class, 'data'])->name('kpp.rekon.data');
+
+    Route::post('/posting', [RekonPajakKppController::class, 'posting'])->name('kpp.rekon.posting');
+    Route::post('/unposting', [RekonPajakKppController::class, 'unposting'])->name('kpp.rekon.unposting');
+    Route::post('/unposting-massal', [RekonPajakKppController::class, 'unPostingMassal'])->name('kpp.rekon.unposting.massal');
+
+    Route::get('/export', [RekonPajakKppController::class, 'export'])->name('kpp.rekon.export');
 });
 
 

@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 use App\Exports\RekonPajakKppExport;
 use Illuminate\Support\Facades\Cache;
+use App\Models\TbSp2d;
 
 class RekonPajakKppController extends Controller
 {
@@ -37,7 +38,7 @@ class RekonPajakKppController extends Controller
             'title'                     => 'Rekon Pajak KPP',
             'active_pengeluaranvertbp'  => 'active',
             'active_siderekonpajak'     => 'active',
-            'active_siderekonpajakgu'   => 'active',
+            'active_siderekonpajak1'    => 'active',
             'breadcumd'                 => 'Penatausahaan',
             'breadcumd1'                => 'Pengelauran',
             'breadcumd2'                => 'Rekon Pajak KPP',
@@ -51,41 +52,44 @@ class RekonPajakKppController extends Controller
         return view('bpkad.rekon_pajak_kpp.index', $data);
     }
 
-    /* =====================
-     * DATA REKON (DATATABLE)
-     * ===================== */
+     /* =========================
+     * SWITCH GU / LS
+     * ========================= */
     public function data(Request $request)
     {
-        $sp2d = Cache::remember('sp2d_api', now()->addMinutes(30), function () {
-            try {
-                return collect(
-                    Http::get('http://127.0.0.1:8001/api/sp2d')->json()
-                )->keyBy(fn($i) => trim($i['nomor_spm']));
-            } catch (\Exception $e) {
-                return collect();
-            }
-        });
+        return $request->jenis === 'LS'
+            ? $this->dataLs($request)
+            : $this->dataGu($request);
+    }
+
+    /* =========================
+     * DATA GU
+     * ========================= */
+    private function dataGu(Request $request)
+    {
+        $sp2dBySpm = Cache::remember(
+            'sp2d_gu_'.$this->tahunAktif,
+            600,
+            fn() => TbSp2d::where('tahun',$this->tahunAktif)
+                ->get()
+                ->keyBy(fn($i)=>trim($i->nomor_spm))
+        );
 
         $query = DB::table('tb_tbp as tbp')
             ->join('tb_potongangu as pot','tbp.id_tbp','=','pot.id_tbp')
-            ->whereYear('tbp.tanggal_tbp', $this->tahunAktif)
-            ->whereRaw('UPPER(pot.status3) = "INPUT"');
+            ->whereYear('tbp.tanggal_tbp',$this->tahunAktif)
+            ->where('pot.status3','INPUT')
 
-        if ($request->opd) {
-            $query->where('tbp.nama_skpd', $request->opd);
-        }
+            // ✅ HANYA STATUS GU YANG DIINGINKAN
+            ->where('pot.status3', 'INPUT')
+            ->where(function ($q) {
+                $q->where('pot.status1', 'Terima')
+                ->orWhere('pot.status1', 'TERIMA')
+                ->orWhere('pot.status1', 'terima');
+            });
 
-        if ($request->bulan) {
-            $query->whereMonth('tbp.tanggal_tbp', $request->bulan);
-        }
-
-        if ($request->tahun) {
-            $query->whereYear('tbp.tanggal_tbp', $request->tahun);
-        }
-
-        // 🔥 FILTER SUDAH SP2D
-        $sp2d = $this->getSp2dCache();
-        $sp2dBySpm = $sp2d->keyBy(fn($i)=>trim($i['nomor_spm']));
+        if ($request->opd)   $query->where('tbp.nama_skpd',$request->opd);
+        if ($request->bulan) $query->whereMonth('tbp.tanggal_tbp',$request->bulan);
 
         $query->select(
             'pot.id',
@@ -95,50 +99,114 @@ class RekonPajakKppController extends Controller
             'pot.nama_pajak_potongan',
             'pot.akun_pajak',
             'pot.nilai_tbp_pajak_potongan',
-            'pot.ntpn',
             'pot.id_billing',
+            'pot.ntpn',
             'pot.status4'
         );
 
         return DataTables::of($query)
             ->addIndexColumn()
+
             ->addColumn('sp2d', fn($r)=>"
-                <b>SPM:</b> {$r->no_spm}<br>
-                <b>TBP:</b> {$r->nomor_tbp}
+                <b>SPM:</b> $r->no_spm<br>
+                <b>TBP:</b> $r->nomor_tbp
             ")
+
+            ->addColumn('sp2d_info', function ($r) use ($sp2dBySpm) {
+                if (!isset($sp2dBySpm[$r->no_spm])) {
+                    return '<span class="badge bg-danger">Belum SP2D</span>';
+                }
+                return '
+                    <b>No:</b> '.$sp2dBySpm[$r->no_spm]->nomor_sp2d.'<br>
+                    <b>Tgl:</b> '.$sp2dBySpm[$r->no_spm]->tanggal_sp2d;
+            })
+
+            ->addColumn('pajak', fn($r)=>"
+                <b>Ebilling:</b> $r->id_billing<br>
+                <b>NTPN:</b> $r->ntpn
+            ")
+
+            ->addColumn('status', function ($r) {
+                if ($r->status4 === 'POSTING') {
+                    return '<span class="badge bg-success">FINAL</span>';
+                }
+                return '<span class="badge bg-warning">Siap Rekon</span>';
+            })
+
+            ->rawColumns(['sp2d','sp2d_info','pajak','status'])
+            ->make(true);
+    }
+
+    /* =========================
+     * DATA LS
+     * ========================= */
+    private function dataLs(Request $request)
+    {
+        $query = DB::table('tb_sp2d as s')
+            ->join('tb_pajak_potonganls as p', 'p.sp2d_id', '=', 's.id')
+            ->where('s.tahun', $this->tahunAktif)
+
+            // 🔥 FILTER PAJAK KPP SAJA
+            ->where(function ($q) {
+                $q->where('p.nama_pajak_potongan', 'LIKE', '%PPH 21%')
+                ->orWhere('p.nama_pajak_potongan', 'LIKE', '%PAJAK PERTAMBAHAN NILAI%')
+                ->orWhere('p.nama_pajak_potongan', 'LIKE', '%PPN%')
+                ->orWhere('p.nama_pajak_potongan', 'LIKE', '%PS 22%')
+                ->orWhere('p.nama_pajak_potongan', 'LIKE', '%PASAL 22%')
+                ->orWhere('p.nama_pajak_potongan', 'LIKE', '%PS 23%')
+                ->orWhere('p.nama_pajak_potongan', 'LIKE', '%PASAL 23%')
+                ->orWhere('p.nama_pajak_potongan', 'LIKE', '%4(2)%')
+                ->orWhere('p.nama_pajak_potongan', 'LIKE', '%PASAL 4%');
+            })
+
+            // ✅ HANYA YANG SUDAH
+            ->where(function ($q) {
+                $q->where('p.status1', 'sudah')
+                ->orWhere('p.status1', 'SUDAH')
+                ->orWhere('p.status1', 'Sudah');
+            });
+
+        if ($request->opd) {
+            $query->where('s.nama_skpd', $request->opd);
+        }
+
+        if ($request->bulan) {
+            $query->whereMonth('s.tanggal_sp2d', $request->bulan);
+        }
+
+        $query->select(
+            'p.id',
+            's.nama_skpd',
+            's.nomor_sp2d',
+            's.tanggal_sp2d',
+            'p.nama_pajak_potongan',
+            'p.akun_pajak',
+            'p.nilai_sp2d_pajak_potongan',
+            'p.id_billing',
+            'p.ntpn',
+            'p.status1'
+        );
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+
+            ->addColumn('sp2d', fn($r)=>"
+                <b>No:</b> {$r->nomor_sp2d}<br>
+                <b>Tgl:</b> {$r->tanggal_sp2d}
+            ")
+
             ->addColumn('pajak', fn($r)=>"
                 <b>Ebilling:</b> {$r->id_billing}<br>
                 <b>NTPN:</b> {$r->ntpn}
             ")
-            ->addColumn('sp2d_info', function ($r) use ($sp2dBySpm) {
 
-                $key = trim($r->no_spm);
+            ->addColumn('status', fn($r)=>
+                $r->status1 === 'POSTING'
+                    ? '<span class="badge bg-success">FINAL</span>'
+                    : '<span class="badge bg-warning">Siap Rekon</span>'
+            )
 
-                if (!isset($sp2dBySpm[$key])) {
-                    return '<span class="badge bg-danger">Belum SP2D</span>';
-                }
-
-                return '
-                    <div>
-                        <b>Tgl:</b> '.$sp2dBySpm[$key]['tanggal_sp2d'].'<br>
-                        <b>No:</b> '.$sp2dBySpm[$key]['nomor_sp2d'].'
-                    </div>
-                ';
-            })
-            ->addColumn('status', function ($r) {
-                if ($r->status4 === 'POSTING') {
-                    return '
-                        <span class="badge bg-success mb-1">FINAL</span><br>
-                        <button class="btn btn-sm btn-danger btn-unposting"
-                            data-id="'.$r->id.'">
-                            UnPosting
-                        </button>
-                    ';
-                }
-
-                return '<span class="badge bg-warning">Siap Rekon</span>';
-            })
-            ->rawColumns(['sp2d','sp2d_info','status', 'pajak'])
+            ->rawColumns(['sp2d','pajak','status'])
             ->make(true);
     }
 
@@ -201,15 +269,6 @@ class RekonPajakKppController extends Controller
             ),
             'REKON_PAJAK_KPP_'.$request->tahun.'.xlsx'
         );
-    }
-
-    private function getSp2dCache()
-    {
-        return Cache::remember('sp2d_api_cache', 300, function () {
-            return collect(
-                Http::get('http://127.0.0.1:8001/api/sp2d')->json()
-            );
-        });
     }
 
     public function unPosting(Request $request)

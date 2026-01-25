@@ -48,6 +48,17 @@
 </div>
 
 <br><br>
+<ul class="nav nav-tabs mb-3" id="rekonTab">
+    <li class="nav-item">
+        <a class="nav-link active" data-jenis="GU" href="#">GU</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-jenis="LS" href="#">LS</a>
+    </li>
+</ul>
+
+<input type="hidden" id="jenis" value="GU">
+
 <table class="table table-bordered" id="table-rekon" width="100%"></table>
 
 @include('bpkad.rekon_pajak_kpp.Fungsi.Fungsi')
