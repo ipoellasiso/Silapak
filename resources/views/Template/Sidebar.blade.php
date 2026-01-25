@@ -55,7 +55,8 @@
 
                     <li class="sidebar-item  has-sub @if(isset($active_master_data)){{ $active_master_data }} @endif">
                         <a href="#" class='sidebar-link'>
-                            <i class="bi bi-pen-fill"></i>
+                            {{-- <i class="bi bi-pen-fill"></i> --}}
+                            <i class="bi bi-stack"></i>
                             <span>Master Data</span>
                         </a>
                         <ul class="submenu @if(isset($active_subopd)){{ $active_subopd }} @endif">
@@ -85,7 +86,7 @@
 
                     <li class="sidebar-item  has-sub @if(isset($active_pengeluaran)){{ $active_pengeluaran }} @endif">
                         <a href="#" class='sidebar-link'>
-                            <i class="bi bi-person-circle"></i>
+                            <i class="bi bi-collection-fill"></i>
                             <span>Data Ingestion</span>
                         </a>
                         <ul class="submenu @if(isset($active_subopd)){{ $active_subopd }} @endif">
@@ -100,7 +101,7 @@
                 <li class="sidebar-title">Penatausahaan</li>
                 <li class="sidebar-item  has-sub @if(isset($active_pengeluaranvertbp)){{ $active_pengeluaranvertbp }} @endif">
                     <a href="#" class='sidebar-link'>
-                        <i class="bi bi-file-earmark-plus-fill"></i>
+                        <i class="bi bi-file-earmark-spreadsheet-fill"></i>
                         <span>Pengeluaran</span>
                     </a>
                     <ul class="submenu @if(isset($active_subpvertbp)){{ $active_subpvertbp }} @endif">

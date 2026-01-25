@@ -5,230 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Silapak - Halaman Login</title>
     <link rel="stylesheet" href="{{ asset('auth/style.css') }}">
-</head>
-
-<style>
-    /* ================= GLOBAL ================= */
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Segoe UI', system-ui, sans-serif;
-        min-height: 100vh;
-        margin: 0;
-        background: linear-gradient(135deg,#4f5ec2 0%,#d7f275 45%,#40bd6e 100%);
-    }
-
-    /* ================= LAYOUT ================= */
-    .login-page {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        gap: 80px;
-        padding: 40px;
-    }
-
-    /* ================= LOGIN CARD ================= */
-    .login-card {
-        width: 380px;
-        background: rgba(255,255,255,0.75);
-        backdrop-filter: blur(14px);
-        border-radius: 22px;
-        padding: 40px 32px;
-        box-shadow:
-            0 20px 45px rgba(234, 234, 84, 0.18),
-            inset 0 0 0 1px rgba(255,255,255,.4);
-        z-index: 2;
-    }
-
-    /* ================= HEADER ================= */
-    .login-header {
-        text-align: center;
-        margin-bottom: 25px;
-    }
-
-    .login-header img {
-        width: 150px;
-        margin-bottom: 12px;
-    }
-
-    .login-header span {
-        display: block;
-        font-size: 15px;
-        color: #5b638b;
-    }
-
-    /* ================= INPUT ================= */
-    .form-group {
-        margin-bottom: 18px;
-    }
-
-    .neu-input {
-        position: relative;
-    }
-
-    .neu-input input,
-    .neu-input select {
-        width: 100%;
-        border: none;
-        outline: none;
-        background: #eef3f8;
-        border-radius: 14px;
-        padding: 18px 20px;
-        font-size: 15px;
-        box-shadow:
-            inset 4px 4px 8px #d9dee5,
-            inset -4px -4px 8px #ffffff;
-    }
-
-    .neu-input label {
-        position: absolute;
-        left: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        font-size: 14px;
-        color: #8891b2;
-        pointer-events: none;
-        transition: .3s;
-    }
-
-    .neu-input input:focus + label,
-    .neu-input input:not(:placeholder-shown) + label {
-        top: 6px;
-        font-size: 11px;
-    }
-
-    /* ================= BUTTON ================= */
-    .login-btn {
-        width: 100%;
-        margin-top: 10px;
-        border: none;
-        border-radius: 16px;
-        padding: 15px;
-        font-size: 16px;
-        font-weight: 700;
-        color: #1f4fa3;
-        background: #eef3f8;
-        cursor: pointer;
-        box-shadow:
-            6px 6px 14px #d0d6e1,
-            -6px -6px 14px #ffffff;
-        transition: .3s;
-    }
-
-    .login-btn:hover {
-        transform: translateY(-2px);
-    }
-
-    /* ================= SIDE LOGO ================= */
-    .side-logo {
-        width: 260px;
-        display: flex;
-        justify-content: center;
-        opacity: 0;
-    }
-
-    .side-logo img {
-        width: 200px;
-        filter: drop-shadow(0 20px 30px rgba(0,0,0,.25));
-        animation: float 4s ease-in-out infinite;
-    }
-
-    /* ================= ANIMATION ================= */
-    .side-logo.left {
-        animation: slideLeft 1.2s ease forwards;
-    }
-
-    .side-logo.right {
-        animation: slideRight 1.2s ease forwards;
-        animation-delay: .3s;
-    }
-
-    @keyframes slideLeft {
-        from { opacity: 0; transform: translateX(-100px); }
-        to   { opacity: 1; transform: translateX(0); }
-    }
-
-    @keyframes slideRight {
-        from { opacity: 0; transform: translateX(100px); }
-        to   { opacity: 1; transform: translateX(0); }
-    }
-
-    @keyframes float {
-        0%,100% { transform: translateY(0); }
-        50%     { transform: translateY(-14px); }
-    }
-
-    /* ================= RESPONSIVE ================= */
-    @media (max-width: 992px) {
-        .side-logo {
-            display: none;
-        }
-
-        .login-page {
-            gap: 0;
-        }
-    }
-</style>
+    <link rel="stylesheet" href="{{ asset('auth/login.css') }}">
 </head>
 
 <body>
-
-<div class="login-page">
-
-    {{-- LOGO KIRI --}}
-    <div class="side-logo left">
-        <img src="/app/assets/images/logo/13.png" style="width: 30%; height: 30%" alt="Logo Kota Palu">
+    {{-- <div class="wave-bg"></div> --}}
+<div class="page">
+    
+    <!-- LOGO ATAS -->
+    <div class="top-logos">
+        <img src="/app/assets/images/logo/13.png" class="logo palu" alt="Kota Palu">
+        <img src="/app/assets/images/112a.png" class="logo silapak" alt="SiLAPAK Palu">
     </div>
 
-    {{-- LOGIN CARD --}}
+    <!-- LOGIN CARD -->
     <div class="login-card">
 
-        <div class="login-header">
-            <img src="/app/assets/images/logo-silapak.png" alt="Sistem Informasi Pelaporan Pajak Daerah Kota Palu">
-            <span>Silahkan Login</span>
-        </div>
+        <h2>Sistem Informasi Pelaporan Pajak Daerah Kota Palu</h2>
+        <p><span>Silahkan Login</span></p>
 
-        <form method="POST" action="/cek_login">
+        <form id="loginForm">
             @csrf
 
             <div class="form-group">
-                <div class="neu-input">
-                    <select name="tahun" required>
-                        <option value="" disabled selected hidden></option>
-                        <option>2025</option>
-                        <option>2026</option>
-                    </select>
-                    <label>Tahun Anggaran</label>
-                </div>
+                <select name="tahun" required>
+                    <option hidden>Pilih Tahun</option>
+                    <option>2025</option>
+                    <option selected>2026</option>
+                </select>
             </div>
 
             <div class="form-group">
-                <div class="neu-input">
-                    <input type="email" name="email" required placeholder=" ">
-                    <label>Email</label>
-                </div>
+                <input type="email" name="email" placeholder="Email" required>
             </div>
 
             <div class="form-group">
-                <div class="neu-input">
-                    <input type="password" name="password" required placeholder=" ">
-                    <label>Password</label>
-                </div>
+                <input type="password" name="password" placeholder="Password" required>
             </div>
 
-            <button class="login-btn">Login</button>
-
+            <button type="button" id="btnLogin" onclick="submitLogin()">Login</button>
         </form>
-    </div>
 
-    {{-- LOGO KANAN --}}
-    <div class="side-logo right">
-        <img src="/app/assets/images/112a.png" style="width: 100%; height: 100%" alt="SiLAPAK">
     </div>
+</div>
 
+<div id="loadingOverlay">
+    <div class="loading-box">
+        <img src="/app/assets/images/112a.png"
+             alt="Loading SILAPAK"
+             class="spinner-logo">
+        <p>Memverifikasi akun...</p>
+    </div>
 </div>
 
     {{-- ================= SWEETALERT2 ================= --}}
@@ -288,7 +115,55 @@
     </script>
     @endif
 
-    <script src="{{ asset('auth/script.js') }}"></script>
+    {{-- <script src="{{ asset('auth/script.js') }}"></script> --}}
+
+    <script>
+        function submitLogin(){
+            const overlay = document.getElementById('loadingOverlay');
+            const btn = document.getElementById('btnLogin');
+            const form = document.getElementById('loginForm');
+
+            overlay.style.display = 'flex';
+            btn.disabled = true;
+            btn.innerHTML = 'Memverifikasi akun...';
+
+            const formData = new FormData(form);
+
+            fetch('/cek_login', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    'Accept': 'application/json'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success'){
+                    // 🔥 simpan flag login sukses
+                    sessionStorage.setItem('login_success', '1');
+
+                    // 🔥 TUNGGU SPINNER BERPUTAR DULU
+                    setTimeout(() => {
+                        window.location.href = res.redirect;
+                    }, 1500); // ⏱️ 1 DETIK
+                } else {
+                    throw res.message;
+                }
+            })
+            .catch(err => {
+                overlay.style.display = 'none';
+                btn.disabled = false;
+                btn.innerHTML = 'Login';
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Login Gagal',
+                    text: err
+                });
+            });
+        }
+    </script>
 
 </body>
 </html>

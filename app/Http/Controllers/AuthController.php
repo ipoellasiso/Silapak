@@ -23,23 +23,26 @@ class AuthController extends Controller
 
     public function cek_login(Request $request)
     {
-        $password       = $request->input('password');
-        $email          = $request->input('email');
-        $tahun          = $request->input('tahun');
-        $is_active      = 'Aktif';
+        $credentials = [
+            'email'     => $request->email,
+            'password'  => $request->password,
+            'is_active' => 'Aktif',
+            'tahun'     => $request->tahun,
+        ];
 
-        if(Auth::guard('web')->attempt(['email' => $email, 'password' => $password, 'is_active' => $is_active, 'tahun' => $tahun]))
-        {
-            return redirect('/home')->with('success', 'Login Berhasil');
+        if (Auth::guard('web')->attempt($credentials)) {
+
+            return response()->json([
+                'status'   => 'success',
+                'message'  => 'Login berhasil',
+                'redirect' => url('/home')
+            ]);
         }
-        // elseif(Auth::guard('web')->attempt(['tahun' => $tahun]))
-        // {
-        //     return redirect('/')->with('error', 'Akun Tidak Ditemukan');
-        // }
-        else 
-        {
-            return redirect('/login')->with('error', 'Upss.. Akun Anda belum aktif atau Email & Password Salah');
-        }
+
+        return response()->json([
+            'status'  => 'error',
+            'message' => 'Upss.. Akun Anda belum aktif atau Email & Password Salah'
+        ], 401);
     }
 
     public function logout()

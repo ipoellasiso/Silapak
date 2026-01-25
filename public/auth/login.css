@@ -1,0 +1,303 @@
+/* =====================================================
+   RESET
+===================================================== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* =====================================================
+   BACKGROUND
+===================================================== */
+body {
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(
+        135deg,
+        #5a6edc 0%,
+        #d7f275 45%,
+        #55c776 100%
+    );
+}
+
+/* =====================================================
+   PAGE WRAPPER (KUNCI STABIL)
+===================================================== */
+.page {
+    position: relative;
+    min-height: 100vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    /* 🔥 ATUR JARAK LOGO ↔ LOGIN CARD */
+    padding-top: 260px;
+}
+
+/* =====================================================
+   LOGO ATAS
+===================================================== */
+.top-logos {
+    position: absolute;
+    top: 60px;                /* 🔥 NAIK / TURUN LOGO */
+    left: 50%;
+    transform: translateX(-45%);
+
+    display: flex;
+    align-items: center;
+    gap: 48px;
+
+    z-index: 10;
+    animation: fadeDown 1s ease;
+}
+
+.top-logos .logo {
+    filter: drop-shadow(0 14px 24px rgba(0,0,0,.25));
+    animation: float 4s ease-in-out infinite;
+}
+
+/* LOGO KOTA PALU */
+.top-logos .logo.palu {
+    height: 120px;
+}
+
+/* LOGO SILAPAK (LEBIH BESAR) */
+.top-logos .logo.silapak {
+    height: 180px;
+}
+
+/* =====================================================
+   LOGIN CARD
+===================================================== */
+.login-card {
+    width: 380px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 22px;
+    padding: 36px 32px;
+
+    box-shadow:
+        0 25px 60px rgba(0,0,0,.18);
+
+    position: relative;
+    transition: box-shadow .3s ease;
+}
+
+/* ❌ TIDAK ADA TRANSLATE / TOP / LEFT */
+/* ❌ AGAR TIDAK GESER */
+
+.login-card:hover {
+    box-shadow:
+        0 35px 80px rgba(0,0,0,.25);
+}
+
+/* =====================================================
+   TEXT
+===================================================== */
+.login-card h2 {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.login-card p {
+    text-align: center;
+    margin-top: 6px;
+    font-size: 14px;
+    color: #4f46e5;
+}
+
+/* =====================================================
+   FORM
+===================================================== */
+.form-group {
+    margin-top: 18px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: none;
+    outline: none;
+
+    background: #eef3f8;
+    font-size: 14px;
+
+    box-shadow:
+        inset 4px 4px 8px #d7dde6,
+        inset -4px -4px 8px #ffffff;
+
+    transition: box-shadow .2s ease;
+}
+
+input:focus,
+select:focus {
+    box-shadow:
+        inset 2px 2px 6px #d6dce6,
+        inset -2px -2px 6px #ffffff;
+}
+
+/* =====================================================
+   BUTTON
+===================================================== */
+button {
+    margin-top: 22px;
+    width: 100%;
+    padding: 14px;
+
+    border: none;
+    border-radius: 16px;
+
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+
+    background: #eef3f8;
+    color: #1f4fa3;
+
+    box-shadow:
+        6px 6px 14px #cfd6e2,
+        -6px -6px 14px #ffffff;
+
+    transition: .3s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+/* =====================================================
+   ANIMASI
+===================================================== */
+@keyframes fadeDown {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+@media (max-width: 480px) {
+
+    .page {
+        padding-top: 220px;
+    }
+
+    .top-logos {
+        top: 20px;
+        gap: 20px;
+    }
+
+    .top-logos .logo.palu {
+        height: 80px;
+    }
+
+    .top-logos .logo.silapak {
+        height: 120px;
+    }
+
+    .login-card {
+        width: 90%;
+    }
+}
+
+.wave-bg {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 200%;
+    height: 45%;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 100% 100% 0 0;
+    animation: waveMove 18s linear infinite;
+    z-index: 0;
+}
+
+@keyframes waveMove {
+    0% {
+        transform: translateX(0);
+    }
+    50% {
+        transform: translateX(-25%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridMove 30s linear infinite;
+    z-index: 0;
+}
+
+@keyframes gridMove {
+    from {
+        background-position: 0 0;
+    }
+    to {
+        background-position: 120px 120px;
+    }
+}
+
+#loadingOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-box {
+    text-align: center;
+}
+
+.spinner-logo {
+    width: 220px;          /* 🔥 BESAR */
+    max-width: 70vw;       /* aman di layar kecil */
+    height: auto;
+    margin-bottom: 18px;
+
+    animation: spinLogo 1.4s linear infinite;
+    transform-origin: center center;
+    filter: drop-shadow(0 14px 28px rgba(0,0,0,.25));
+}
+
+.loading-box p {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f4fa3;
+}
+
+/* Animasi putar logo */
+@keyframes spinLogo {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}

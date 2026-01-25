@@ -20,13 +20,11 @@ class NeumorphismLoginForm {
     }
     
     bindEvents() {
-        this.form.addEventListener('submit', (e) => this.handleSubmit(e));
         this.emailInput.addEventListener('blur', () => this.validateEmail());
         this.passwordInput.addEventListener('blur', () => this.validatePassword());
         this.emailInput.addEventListener('input', () => this.clearError('email'));
         this.passwordInput.addEventListener('input', () => this.clearError('password'));
-        
-        // Add soft press effects to inputs
+
         [this.emailInput, this.passwordInput].forEach(input => {
             input.addEventListener('focus', (e) => this.addSoftPress(e));
             input.addEventListener('blur', (e) => this.removeSoftPress(e));
@@ -181,31 +179,31 @@ class NeumorphismLoginForm {
         }, 300);
     }
     
-    async handleSubmit(e) {
-        e.preventDefault();
+    // async handleSubmit(e) {
+    //     e.preventDefault();
         
-        const isEmailValid = this.validateEmail();
-        const isPasswordValid = this.validatePassword();
+    //     const isEmailValid = this.validateEmail();
+    //     const isPasswordValid = this.validatePassword();
         
-        if (!isEmailValid || !isPasswordValid) {
-            this.animateSoftPress(this.submitButton);
-            return;
-        }
+    //     if (!isEmailValid || !isPasswordValid) {
+    //         this.animateSoftPress(this.submitButton);
+    //         return;
+    //     }
         
-        this.setLoading(true);
+    //     this.setLoading(true);
         
-        try {
-            // Simulate soft authentication
-            await new Promise(resolve => setTimeout(resolve, 2000));
+    //     try {
+    //         // Simulate soft authentication
+    //         await new Promise(resolve => setTimeout(resolve, 2000));
             
-            // Show neumorphic success
-            this.showNeumorphicSuccess();
-        } catch (error) {
-            this.showError('password', 'Login failed. Please try again.');
-        } finally {
-            this.setLoading(false);
-        }
-    }
+    //         // Show neumorphic success
+    //         this.showNeumorphicSuccess();
+    //     } catch (error) {
+    //         this.showError('password', 'Login failed. Please try again.');
+    //     } finally {
+    //         this.setLoading(false);
+    //     }
+    // }
     
     async handleSocialLogin(provider, button) {
         console.log(`Initiating ${provider} login...`);
@@ -237,31 +235,31 @@ class NeumorphismLoginForm {
         });
     }
     
-    showNeumorphicSuccess() {
-        // Soft fade out form
-        this.form.style.transform = 'scale(0.95)';
-        this.form.style.opacity = '0';
+    // showNeumorphicSuccess() {
+    //     // Soft fade out form
+    //     this.form.style.transform = 'scale(0.95)';
+    //     this.form.style.opacity = '0';
         
-        setTimeout(() => {
-            this.form.style.display = 'none';
-            document.querySelector('.social-login').style.display = 'none';
-            document.querySelector('.signup-link').style.display = 'none';
+    //     setTimeout(() => {
+    //         this.form.style.display = 'none';
+    //         document.querySelector('.social-login').style.display = 'none';
+    //         document.querySelector('.signup-link').style.display = 'none';
             
-            // Show success with soft animation
-            this.successMessage.classList.add('show');
+    //         // Show success with soft animation
+    //         this.successMessage.classList.add('show');
             
-            // Animate success icon
-            const successIcon = this.successMessage.querySelector('.neu-icon');
-            successIcon.style.animation = 'successPulse 0.6s ease-out';
+    //         // Animate success icon
+    //         const successIcon = this.successMessage.querySelector('.neu-icon');
+    //         successIcon.style.animation = 'successPulse 0.6s ease-out';
             
-        }, 300);
+    //     }, 300);
         
-        // Simulate redirect
-        setTimeout(() => {
-            console.log('Redirecting to dashboard...');
-            // window.location.href = '/dashboard';
-        }, 2500);
-    }
+    //     // Simulate redirect
+    //     setTimeout(() => {
+    //         console.log('Redirecting to dashboard...');
+    //         // window.location.href = '/dashboard';
+    //     }, 2500);
+    // }
 }
 
 // Add custom animations

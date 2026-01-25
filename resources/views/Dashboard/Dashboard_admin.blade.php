@@ -114,6 +114,33 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('login_success') === '1') {
+
+        Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            iconColor: 'white',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            customClass: {
+                popup: 'colored-toast success'
+            }
+        }).fire({
+            icon: 'success',
+            title: 'Login berhasil'
+        });
+
+        // 🔥 hapus flag supaya tidak muncul lagi
+        sessionStorage.removeItem('login_success');
+    }
+});
+</script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
 
