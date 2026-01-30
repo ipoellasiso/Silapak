@@ -62,5 +62,31 @@ crossorigin="anonymous" referrerpolicy="no-referrer" />
         .colored-toast .swal2-html-container {
         color: white;
         }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #f8f9fa;
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .preloader-content {
+            text-align: center;
+        }
+
+        .preloader-logo {
+            width: 120px;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%   { transform: scale(1); opacity: 1; }
+            50%  { transform: scale(1.08); opacity: 0.75; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
     </style>
     

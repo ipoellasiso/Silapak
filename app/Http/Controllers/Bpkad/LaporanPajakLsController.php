@@ -75,6 +75,9 @@ class LaporanPajakLsController extends Controller
             ->orWhere('pajak.nama_pajak_potongan', 'like', '%Pajak Penghasilan PS 24%');
         });
 
+        // ❌ JANGAN TAMPILKAN PAJAK NILAI 0
+        $query->where('pajak.nilai_sp2d_pajak_potongan', '>', 0);
+
         if ($request->opd) {
             $query->where('sp2d.nama_skpd', $request->opd);
         }
@@ -113,6 +116,7 @@ class LaporanPajakLsController extends Controller
             ->whereNotNull('pajak.rek_belanja')
             ->whereNotNull('pajak.id_billing')
             ->whereNotNull('pajak.ntpn');
+        
 
         return DataTables::of($query)
             ->addIndexColumn()

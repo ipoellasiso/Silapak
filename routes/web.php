@@ -208,6 +208,8 @@ Route::get('/sp2d/kkpd', [Sp2dController::class, 'dataKKPD'])->middleware('auth:
 Route::get('/sp2d/hapus', [Sp2dController::class, 'dataHapus'])->middleware('auth:web','checkRole:Admin');
 Route::post('/sp2d/restore', [Sp2dController::class, 'restore'])->middleware('auth:web','checkRole:Admin');
 
+Route::get('/sp2d/total-bulanan', [Sp2dController::class, 'totalSp2dBulanan']);
+
 // Input Pajak LS
 Route::prefix('bpkad/pajak-ls')->middleware(['auth:web','checkRole:Admin'])->group(function () {
 

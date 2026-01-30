@@ -13,16 +13,16 @@
                 <a class="nav-link active" data-bs-toggle="tab" href="#tab-tarik">Tarik Data Sp2d</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-ls">LS</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-ls">SP2D LS</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-gu">GU</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-gu">SP2D GU</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-kkpd">KKPD</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-kkpd">SP2D KKPD</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" data-bs-toggle="tab" href="#tab-hapus">Hapus</a>
+                <a class="nav-link" data-bs-toggle="tab" href="#tab-hapus">SP2D Hapus</a>
             </li>
         </ul>
 
@@ -33,9 +33,12 @@
             {{-- TAB 1: TARIK DATA --}}
             <div id="tab-tarik" class="tab-pane fade show active p-3">
                 <form id="formTarikSp2d">
-                    <textarea class="form-control" id="json_data" name="json_data" rows="12" placeholder="Paste JSON dari SIPD disini..."></textarea>
+                    <textarea class="form-control" id="json_data" name="json_data" rows="12" placeholder="Paste Data SP2D dari SIPD disini..."></textarea>
                     <button type="submit" id="btnProses" class="btn btn-primary mt-3">Simpan</button>
                 </form>
+
+                <br><br>
+                <div id="cardTotalSp2d" class="row g-3 mb-4"></div>
             </div>
 
             {{-- TAB 2: SP2D LS --}}
@@ -49,6 +52,7 @@
                             <th>Pihak Ketiga</th>
                             <th>Nilai</th>
                             <th>Tanggal</th>
+                            <th>Aksi</th> <!-- ✅ TAMBAH INI -->
                         </tr>
                     </thead>
                 </table>
@@ -65,6 +69,7 @@
                             <th>Pihak Ketiga</th>
                             <th>Nilai</th>
                             <th>Tanggal</th>
+                            <th>Aksi</th> <!-- ✅ TAMBAH INI -->
                         </tr>
                     </thead>
                 </table>

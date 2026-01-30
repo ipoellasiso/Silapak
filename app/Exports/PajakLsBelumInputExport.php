@@ -17,7 +17,7 @@ class PajakLsBelumInputExport implements FromCollection, WithHeadings
             ->where(function ($q) {
                 $q->whereDoesntHave('pajakPotonganLs')
                   ->orWhereHas('pajakPotonganLs', function ($p) {
-                      $p->whereNull('status1');
+                      $p->where('status1', 'draft')->where('nilai_sp2d_pajak_potongan', '>', 0);
                   });
             })
             ->with('pajakPotonganLs')
@@ -37,7 +37,7 @@ class PajakLsBelumInputExport implements FromCollection, WithHeadings
                     'jenis_pajak' => '-',
                     'id_billing' => '-',
                     'ntpn' => '-',
-                    'nilai_pajak' => 0,
+                    // 'nilai_pajak' => 0,
                     'status_pajak' => 'BELUM INPUT'
                 ]);
             }
@@ -46,7 +46,7 @@ class PajakLsBelumInputExport implements FromCollection, WithHeadings
             foreach ($sp2d->pajakPotonganLs as $pajak) {
             // FILTER JENIS PAJAK
             if (
-                is_null($pajak->status1) &&
+                ($pajak->status1 == "draft") && ($pajak->nilai_sp2d_pajak_potongan > 0) &&
                 (
                     str_contains($pajak->nama_pajak_potongan, 'PPH 21') ||
                     str_contains($pajak->nama_pajak_potongan, 'Pajak Pertambahan Nilai') ||

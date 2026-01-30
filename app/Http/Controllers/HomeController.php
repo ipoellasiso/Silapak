@@ -62,7 +62,8 @@ class HomeController extends Controller
 
         foreach ($pajakLsBelumInput as $sp2d) {
             $totalPajakBelumInput += $sp2d->pajakPotonganLs
-                ->whereNull('status1')
+                ->where('status1', 'draft')
+                ->where('nilai_sp2d_pajak_potongan', '>', 0)
                 ->filter(function ($pajak) {
                     return
                         str_contains($pajak->nama_pajak_potongan, 'PPH 21') ||
@@ -104,8 +105,10 @@ class HomeController extends Controller
         $batasHari = Carbon::now()->subDays(2)->startOfDay();
 
         return TbSp2d::whereDate('tanggal_sp2d', '<=', $batasHari)
+            
             ->whereHas('pajakPotonganLs', function ($p) {
-                $p->whereNull('status1')
+                $p->where('status1','draft')
+                ->where('nilai_sp2d_pajak_potongan', '>', 0)
                 ->where(function ($q) {
                     $q->where('nama_pajak_potongan', 'like', '%PPH 21%')
                         ->orWhere('nama_pajak_potongan', 'like', '%Pajak Pertambahan Nilai%')

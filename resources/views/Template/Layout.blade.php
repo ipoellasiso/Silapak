@@ -7,6 +7,16 @@
 
 <body>
     <script src="/assets/static/js/initTheme.js"></script>
+    {{-- PRELOADER --}}
+    {{-- <div id="preloader">
+        <div class="preloader-content">
+            <img src="/app/assets/images/p.png" 
+                 alt="SiLAPAK"
+                 class="preloader-logo">
+            <div class="mt-2 text-muted fw-semibold">Loading SiLAPAK...</div>
+        </div>
+    </div> --}}
+
     <div id="app">
 
         {{-- sidebar --}}
@@ -50,6 +60,27 @@
 
     {{-- Script --}}
     @include('Template.Script')
+
+    <script>
+        window.addEventListener('load', function () {
+            const loader = document.getElementById('preloader');
+            if (loader) {
+                loader.style.opacity = '0';
+                loader.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => loader.remove(), 300);
+            }
+        });
+    </script>
+
+    <script>
+        $(document).ajaxStart(function () {
+            $('#preloader').fadeIn(100);
+        });
+
+        $(document).ajaxStop(function () {
+            $('#preloader').fadeOut(200);
+        });
+    </script>
     
 </body>
 
