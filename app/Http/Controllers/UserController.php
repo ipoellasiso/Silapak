@@ -117,6 +117,9 @@ class UserController extends Controller
         }
         else
         {
+            // ✅ AMBIL NAMA OPD
+            $opd = OpdModel::where('id', $request->id_opd)->first();
+
             $details = [
                 'id_opd'  => $request->id_opd,
                 'fullname'  => $request->fullname,
@@ -125,6 +128,7 @@ class UserController extends Controller
                 'role'  => $request->role,
                 'is_active' => 'Nonaktif',
                 'tahun' => date('Y'),
+                'nama_opd'  => $opd->nama_opd,   // 🔥 INI KUNCINYA
             ];
 
             if ($files = $request->file('gambar')){

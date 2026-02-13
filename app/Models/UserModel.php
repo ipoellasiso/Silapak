@@ -24,6 +24,7 @@ class UserModel extends Model
         'gambar',
         'is_active',
         'tahun',
+        'nama_opd'
     ];
 
     protected $hidden = [
