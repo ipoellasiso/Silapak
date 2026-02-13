@@ -6,6 +6,7 @@ use App\Http\Controllers\Bpkad\RekonPajakKppController;
 use App\Http\Controllers\Bpkad\VerifikasiTbpController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Bpkad\LaporanPajakLsController;
+use App\Http\Controllers\DataRealisasiController;
 use App\Http\Controllers\Master\AkunPajakController;
 use App\Http\Controllers\Opd\InputPajakController;
 use App\Http\Controllers\OpdController;
@@ -244,3 +245,7 @@ Route::get(
     '/export/pajak-ls-belum-input',
     [HomeController::class, 'exportPajakLsBelumInput']
 )->name('pajakls.export-belum-input');
+
+// DATA REALISASI
+Route::get('/tampildatarealisasibelanja', [DataRealisasiController::class, 'index'])->middleware('auth:web','checkRole:User');
+Route::get('/datarealisasi/export', [DataRealisasiController::class, 'export'])->middleware('auth:web','checkRole:User,User');

@@ -97,6 +97,23 @@
                     </li>
                 @endif
 
+                @if(Auth::user()->role == 'User')
+                    <li class="sidebar-title">Pengaturan</li>
+
+                    <li class="sidebar-item  has-sub @if(isset($active_master_data)){{ $active_master_data }} @endif">
+                        <a href="#" class='sidebar-link'>
+                            {{-- <i class="bi bi-pen-fill"></i> --}}
+                            <i class="bi bi-stack"></i>
+                            <span>Master Data</span>
+                        </a>
+                        <ul class="submenu @if(isset($active_subrealisasi)){{ $active_subrealisasi }} @endif">
+                            <li class="submenu-item @if(isset($active_siderealisasi)){{ $active_siderealisasi }} @endif">
+                                <a href="/tampildatarealisasibelanja">Realisasi</a>
+                            </li>
+                        </ul>
+                    </li>
+                @endif
+
                 @if(Auth::user()->role == 'Admin' || Auth::user()->role == 'Verifikasi')
                 <li class="sidebar-title">Penatausahaan</li>
                 <li class="sidebar-item  has-sub @if(isset($active_pengeluaranvertbp)){{ $active_pengeluaranvertbp }} @endif">
