@@ -184,15 +184,23 @@ Route::prefix('bpkad')->middleware(['auth'])->group(function () {
 });
 
 // REKON KE KPP
-Route::prefix('kpp/rekon')->group(function () {
-    Route::get('/pajak', [RekonPajakKppController::class, 'index'])->name('kpp.rekon.index');
-    Route::get('/data', [RekonPajakKppController::class, 'data'])->name('kpp.rekon.data');
+Route::prefix('kpp/rekon')->middleware(['auth:web','checkRole:Admin'])->group(function () {
+    // LS
+    Route::get('/pajak', [RekonPajakKppController::class, 'index'])->name('kpp.rekon.index')->middleware('auth:web','checkRole:Admin');
+    Route::get('/data', [RekonPajakKppController::class, 'data'])->name('kpp.rekon.data')->middleware('auth:web','checkRole:Admin');
+    Route::post('/posting', [RekonPajakKppController::class, 'posting'])->name('kpp.rekon.posting')->middleware('auth:web','checkRole:Admin');
+    Route::post('/kpp/rekon/unposting-select', [RekonPajakKppController::class, 'unPostingSelect'])->name('kpp.rekon.unposting.select')->middleware('auth:web','checkRole:Admin');
+    Route::post('/kpp/rekon/unposting-massal', [RekonPajakKppController::class, 'unPostingMassal'])->name('kpp.rekon.unposting.massal')->middleware('auth:web','checkRole:Admin');
+    Route::post('/kpp/rekon/posting-select', [RekonPajakKppController::class, 'postingSelect'])->name('kpp.rekon.posting.select')->middleware('auth:web','checkRole:Admin');
+    Route::post('/kpp/rekon/posting-massal', [RekonPajakKppController::class, 'postingMassal'])->name('kpp.rekon.posting.massal')->middleware('auth:web','checkRole:Admin');
+    Route::post('/kpp/rekon/pelaporan',[RekonPajakKppController::class, 'pelaporanPajak'])->name('kpp.rekon.pelaporan')->middleware('auth:web','checkRole:Admin');
+    Route::get('/export', [RekonPajakKppController::class, 'export'])->name('kpp.rekon.export')->middleware('auth:web','checkRole:Admin');
 
-    Route::post('/posting', [RekonPajakKppController::class, 'posting'])->name('kpp.rekon.posting');
-    Route::post('/unposting', [RekonPajakKppController::class, 'unposting'])->name('kpp.rekon.unposting');
-    Route::post('/unposting-massal', [RekonPajakKppController::class, 'unPostingMassal'])->name('kpp.rekon.unposting.massal');
+    //GU
+    Route::post('/pelaporan-gu', [RekonPajakKppController::class, 'pelaporanPajakGu'])->name('kpp.rekon.pelaporan.gu')->middleware('auth:web','checkRole:Admin');
 
-    Route::get('/export', [RekonPajakKppController::class, 'export'])->name('kpp.rekon.export');
+    Route::post('/kpp/rekon/posting-gu-select',[RekonPajakKppController::class, 'postingGuSelect'])->name('kpp.rekon.posting.gu.select');
+    Route::post('/kpp/rekon/posting-gu-massal',[RekonPajakKppController::class, 'postingGuMassal'])->name('kpp.rekon.posting.gu.massal');
 });
 
 

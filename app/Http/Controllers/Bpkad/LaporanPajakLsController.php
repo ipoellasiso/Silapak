@@ -29,6 +29,7 @@ class LaporanPajakLsController extends Controller
 
         $data = [
             'title'                     => 'Data Pajak LS',
+            'active_pengeluaranvertbp'  => 'active',
             'active_subpvertbp'         => 'active',
             'active_sidedatapajak'      => 'active',
             'active_sidedatapajakls'    => 'active',
@@ -239,6 +240,7 @@ class LaporanPajakLsController extends Controller
             'ntpn'        => $request->ntpn,
             'id_billing'  => $request->id_billing,
             'status1'     => 'sudah',
+            'tanggal_input' => now(),
             'koreksi_kpp' => 1
         ]);
 

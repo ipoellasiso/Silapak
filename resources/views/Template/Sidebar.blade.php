@@ -114,7 +114,7 @@
                                     <li class="submenu-item @if(isset($active_sidedatapajakls)){{ $active_sidedatapajakls }} @endif">
                                         <a href="/bpkad/pajak-ls/pajakls" class="submenu-link">LS</a>
                                     </li>
-                                    <li class="submenu-item @if(isset($active_sidedatapajakgu)){{ $active_sidedatapajakhu }} @endif">
+                                    <li class="submenu-item @if(isset($active_sidedatapajakgu)){{ $active_sidedatapajakgu }} @endif">
                                         <a href="/bpkad/laporan-pajak-kpp" class="submenu-link">GU</a>
                                     </li>
                                 </ul>
@@ -123,7 +123,7 @@
                             <a href="#" class="submenu-link">Validasi Pajak</a>
                                 <ul class="submenu submenu-level-2 ">
                                     <li class="submenu-item @if(isset($active_siderekonpajak1)){{ $active_siderekonpajak1 }} @endif">
-                                        <a href="kpp/rekon/pajak" class="submenu-link">Pajak LS & GU</a>
+                                        <a href="/kpp/rekon/pajak" class="submenu-link">Pajak LS & GU</a>
                                     </li>
                                 </ul>
                         </li>

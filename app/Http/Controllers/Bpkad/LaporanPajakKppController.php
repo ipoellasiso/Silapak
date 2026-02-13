@@ -35,8 +35,9 @@ class LaporanPajakKppController extends Controller
         $data = [
             'title'                     => 'Data Pajak GU',
             'active_pengeluaranvertbp'  => 'active',
-            'active_subpvertbp'         => '',
-            'active_sidevertbp'         => '',
+            'active_subpvertbp'         => 'active',
+            'active_sidedatapajak'      => 'active',
+            'active_sidedatapajakgu'    => 'active',
             'breadcumd'                 => 'Penatausahaan',
             'breadcumd1'                => 'Pengelauran',
             'breadcumd2'                => 'Data Pajak GU',
