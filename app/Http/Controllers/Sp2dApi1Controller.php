@@ -10,7 +10,7 @@ use App\Models\TbPajakPotonganLs;
 use App\Models\TbSp2d;
 use Illuminate\Http\Request;
 
-class Sp2dApiController extends Controller
+class Sp2dApi1Controller extends Controller
 {
     public function index()
     {

@@ -51,25 +51,50 @@ class VerifikasiTbpController extends Controller
     {
         $data = DB::table('tb_tbp')
             ->join('tb_potongangu', 'tb_potongangu.id_tbp', '=', 'tb_tbp.id_tbp')
-            ->whereYear('tb_tbp.tanggal_tbp', $this->tahunAktif) // ✅ FIX
+            ->whereYear('tb_tbp.tanggal_tbp', $this->tahunAktif)
             ->where('tb_tbp.status', 'DRAFT')
             ->select(
                 'tb_tbp.id_tbp',
                 'tb_tbp.nomor_tbp',
                 'tb_tbp.nama_skpd',
-                DB::raw('SUM(tb_potongangu.nilai_tbp_pajak_potongan) as total_pajak')
-            )
-            ->groupBy('tb_tbp.id_tbp','tb_tbp.nomor_tbp','tb_tbp.nama_skpd');
+                'tb_potongangu.id',
+                'tb_potongangu.nama_pajak_potongan',
+                'tb_potongangu.nilai_tbp_pajak_potongan'
+            );
 
         return datatables()->of($data)
             ->addIndexColumn()
-            ->editColumn('total_pajak', fn($r) => number_format($r->total_pajak))
-            ->addColumn('aksi', fn($r) =>
-                '<button class="btn btn-success btn-sm btn-terima" data-id="'.$r->id_tbp.'">Terima</button>
-                 <button class="btn btn-danger btn-sm btn-tolak" data-id="'.$r->id_tbp.'">Tolak</button>'
+            ->editColumn('nilai_tbp_pajak_potongan', fn($r) =>
+                'Rp ' . number_format($r->nilai_tbp_pajak_potongan, 0, ',', '.')
             )
-            ->addColumn('cek', function ($r) {
-                return '<input type="checkbox" class="cek-tbp" value="'.$r->id_tbp.'">';
+            ->addColumn('aksi', fn($r) =>
+                '<button class="btn btn-success btn-sm btn-terima"
+                    data-id="'.$r->id_tbp.'"
+                    data-idpajak="'.$r->id.'">
+                    <i class="fas fa-check"></i> Terima
+                </button>
+                <button class="btn btn-danger btn-sm btn-tolak-ver"
+                    data-id="'.$r->id_tbp.'"
+                    data-idpajak="'.$r->id.'">
+                    <i class="fas fa-times"></i> Tolak
+                </button>'
+            )
+            ->addColumn('cek', fn($r) =>
+                '<input type="checkbox" class="cek-tbp"
+                    value="'.$r->id_tbp.'"
+                    data-idpajak="'.$r->id.'">'
+            )
+            ->filterColumn('nama_pajak_potongan', function($query, $keyword) {
+                $query->where('tb_potongangu.nama_pajak_potongan', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('nilai_tbp_pajak_potongan', function($query, $keyword) {
+                $query->where('tb_potongangu.nilai_tbp_pajak_potongan', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('nomor_tbp', function($query, $keyword) {
+                $query->where('tb_tbp.nomor_tbp', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('nama_skpd', function($query, $keyword) {
+                $query->where('tb_tbp.nama_skpd', 'like', "%{$keyword}%");
             })
             ->rawColumns(['aksi', 'cek'])
             ->make(true);
@@ -80,45 +105,53 @@ class VerifikasiTbpController extends Controller
      * ========================= */
     public function dataTerima()
     {
-        $data = TbTbp::where('status', 'FINAL')->whereYear('tb_tbp.tanggal_tbp', $this->tahunAktif); // ✅ FIX
+        $data = DB::table('tb_tbp')
+            ->join('tb_potongangu', 'tb_potongangu.id_tbp', '=', 'tb_tbp.id_tbp')
+            ->whereYear('tb_tbp.tanggal_tbp', $this->tahunAktif)
+            ->where('tb_tbp.status', 'FINAL')
+            ->select(
+                'tb_tbp.id_tbp',
+                'tb_tbp.nomor_tbp',
+                'tb_tbp.nama_skpd',
+                'tb_potongangu.id',
+                'tb_potongangu.nama_pajak_potongan',
+                'tb_potongangu.nilai_tbp_pajak_potongan',
+                'tb_potongangu.status3'
+            );
 
         return datatables()->of($data)
             ->addIndexColumn()
-
-            ->addColumn('total_pajak', function ($r) {
-                return number_format(
-                    TbPotonganGu::where('id_tbp', $r->id_tbp)
-                        ->sum('nilai_tbp_pajak_potongan')
-                );
-            })
-
+            ->editColumn('nilai_tbp_pajak_potongan', fn($r) =>
+                'Rp ' . number_format($r->nilai_tbp_pajak_potongan, 0, ',', '.')
+            )
             ->addColumn('aksi', function ($r) {
-
-                // cek apakah ada pajak yg SUDAH INPUT
-                $sudahInput = TbPotonganGu::where('id_tbp', $r->id_tbp)
-                    ->where('status3', 'INPUT')
-                    ->exists();
-
-                if ($sudahInput) {
+                if ($r->status3 === 'INPUT') {
                     return '
-                            <button class="btn btn-sm btn-danger btn-tolak"
-                                data-id="'.$r->id_tbp.'"
-                                title="Tolak">
-                                <i class="fas fa-times"></i>Pajak sudah diinput
-                            </button>
-                        </div>
-                    ';
+                        <button class="btn btn-sm btn-danger btn-tolak"
+                            data-id="'.$r->id_tbp.'"
+                            title="Tolak">
+                            <i class="fas fa-times"></i> Pajak sudah diinput
+                        </button>';
                 }
-
                 return '
                     <button class="btn btn-sm btn-success btn-tolak"
                         data-id="'.$r->id_tbp.'"
                         title="Tolak">
-                        <i class="fas fa-times"></i>Pajak belum diinput
-                    </button>
-                ';
+                        <i class="fas fa-times"></i> Pajak belum diinput
+                    </button>';
             })
-
+            ->filterColumn('nama_pajak_potongan', function($query, $keyword) {
+                $query->where('tb_potongangu.nama_pajak_potongan', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('nilai_tbp_pajak_potongan', function($query, $keyword) {
+                $query->where('tb_potongangu.nilai_tbp_pajak_potongan', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('nomor_tbp', function($query, $keyword) {
+                $query->where('tb_tbp.nomor_tbp', 'like', "%{$keyword}%");
+            })
+            ->filterColumn('nama_skpd', function($query, $keyword) {
+                $query->where('tb_tbp.nama_skpd', 'like', "%{$keyword}%");
+            })
             ->rawColumns(['aksi'])
             ->make(true);
     }

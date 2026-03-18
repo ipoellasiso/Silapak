@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Sp2dApi1Controller;
 use App\Http\Controllers\Sp2dApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // Data SP2D
-Route::apiResource('/sp2d_api', Sp2dApiController::class);
-Route::apiResource('/rek_belanja_api', Sp2dApiController::class);
-Route::apiResource('/pajak_potongan_api', Sp2dApiController::class);
+Route::apiResource('/sp2d_api', Sp2dApi1Controller::class);
+Route::apiResource('/rek_belanja_api', Sp2dApi1Controller::class);
+Route::apiResource('/pajak_potongan_api', Sp2dApi1Controller::class);

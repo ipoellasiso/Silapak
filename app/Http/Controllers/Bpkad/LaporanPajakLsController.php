@@ -73,7 +73,8 @@ class LaporanPajakLsController extends Controller
             ->orWhere('pajak.nama_pajak_potongan', 'like', '%PPh 21%')
             ->orWhere('pajak.nama_pajak_potongan', 'like', '%Pajak Penghasilan PS 22%')
             ->orWhere('pajak.nama_pajak_potongan', 'like', '%Pajak Penghasilan PS 23%')
-            ->orWhere('pajak.nama_pajak_potongan', 'like', '%Pajak Penghasilan PS 24%');
+            ->orWhere('pajak.nama_pajak_potongan', 'like', '%Pajak Penghasilan PS 24%')
+            ->orWhere('pajak.nama_pajak_potongan', 'like', '%Pajak Penghasilan Ps 4 (2)%');
         });
 
         // ❌ JANGAN TAMPILKAN PAJAK NILAI 0
@@ -153,7 +154,7 @@ class LaporanPajakLsController extends Controller
     {
         $query = $this->baseLsQuery($request)
             ->where(function ($q) {
-                $q->where('pajak.status1', 'belum')
+                $q->where('pajak.status1', 'draft')
                 ->orWhereNull('pajak.id_billing')
                 ->orWhereNull('pajak.ntpn');
             });
